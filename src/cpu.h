@@ -46,7 +46,8 @@ struct c6502
         irq_,
         nmi_;
     uint64_t
-        ticks_;
+        nr_ticks_,
+        nr_instructions;
     struct _16_bit
         program_counter_,
         stack_pointer_,

@@ -65,11 +65,6 @@ void cpu_fetch_instruction()
         *cpu.opcode_args_.msb_ = cpu_bus.data_;
         ++cpu.program_counter_.word_;
     }
-
-    cpu.program_counter_.word_ -= instruction->nr_bytes_;
-    log_state();
-    log_write("\n\0");
-    cpu.program_counter_.word_ += instruction->nr_bytes_;
 }
 
 void cpu_execute_instruction()
@@ -106,7 +101,7 @@ void cpu_tick()
     {
         bus_listen(cpu_bus.listeners_[i], &cpu_bus);
     }
-    ++cpu.ticks_;
+    ++cpu.nr_ticks_;
 }
 
 

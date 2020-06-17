@@ -96,6 +96,7 @@ void tsx(struct instruction *this);     // TSX Transfer stack pointer to index X
 void txa(struct instruction *this);     // TXA Transfer index X to accumulator
 void txs(struct instruction *this);     // TXS Transfer index X to stack pointer
 
+void unofficial_opcode(struct instruction *this);
 
 
 #endif /* SRC_INSTRUCTION_H_ */

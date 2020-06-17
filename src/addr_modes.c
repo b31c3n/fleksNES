@@ -162,14 +162,12 @@ void indirect_indexed(struct instruction *this)
     *temp_addr.msb_ = cpu_bus.data_;
     cpu.adh_adl_.word_ = temp_addr.word_;
 
-    *cpu.adh_adl_.lsb_ += cpu.y_;
+    cpu.adh_adl_.word_ += cpu.y_;
 
     bool
-        bit8_1 = *temp_addr.lsb_ & 0x100 ,
-        bit8_2 = *cpu.adh_adl_.lsb_ & 0x100,
+        bit8_1 = temp_addr.word_ & 0x100 ,
+        bit8_2 = cpu.adh_adl_.word_ & 0x100,
         page_crossed = bit8_1 != bit8_2;
-
-    cpu.adh_adl_.msb_ += page_crossed ? 1 : 0;
 
     if(!(this->flags_ & CHECK_PAGECROSS) || page_crossed)
     {
@@ -194,6 +192,7 @@ void relative(struct instruction *this)
 void zero_page(struct instruction *this)
 {
     *cpu.adh_adl_.msb_ = 0;
+    *cpu.adh_adl_.lsb_ = *cpu.opcode_args_.lsb_;
     this->operand_ = &cpu_bus.data_;
 }
 
