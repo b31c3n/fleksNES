@@ -6,7 +6,17 @@
  */
 
 #include "ppu.h"
+#include "clock.h"
 
+void ppu_run(void)
+{
+    while(1)
+    {
+        sem_wait(&nes_clock.ppu_sem_);
+//        puts("ppu");
+        sem_post(&nes_clock.pclock_sem_);
+    }
+}
 
 struct ppu_2C0X ppu =
 {
@@ -28,9 +38,11 @@ static void ppu_write(struct peripheral *this)
         *memory = this->bus_->data_;
         if(reg == PPU_SCROLL || reg == PPU_ADDR)
         {
-            if(reg == PPU_SCROLL)   ppu.scroll_ |= ppu.latch_ ? *memory : (uint16_t) ((*memory) << 8);
-            if(reg == PPU_ADDR)     ppu.ppu_addr_ |= ppu.latch_ ? *memory : (uint16_t) ((*memory) << 8);
-            ppu.latch_ = 1;
+            if(reg == PPU_SCROLL)
+                ppu.scroll_ |= ppu.latch_ ? *memory : (uint16_t) ((*memory) << 8);
+            else if(reg == PPU_ADDR)
+                ppu.ppu_addr_ |= ppu.latch_ ? *memory : (uint16_t) ((*memory) << 8);
+            ppu.latch_ = ppu.latch_ ? 0 : 1;
         }
         else if(reg == PPU_DATA)
         {

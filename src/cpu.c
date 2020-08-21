@@ -9,6 +9,7 @@
 #include <omp.h>
 #include "cpu.h"
 #include "instruction_tbl.h"
+#include "clock.h"
 
 struct c6502 cpu =
 {
@@ -94,15 +95,41 @@ void cpu_execute_instruction()
 }
 
 
-void cpu_tick()
+void cpu_wait_for_tick()
 {
+    sem_wait(&nes_clock.cpu_sem_);
+//    puts("cpu");
     // Peripheral reads on buses
     for(int i = 0; i < cpu_bus.nr_listeners_; ++i)
     {
         bus_listen(cpu_bus.listeners_[i], &cpu_bus);
     }
     ++cpu.nr_ticks_;
+    sem_post(&nes_clock.cclock_sem_);
 }
+
+void cpu_run()
+{
+    while(1)
+    {
+        if(!(cpu.suspend_etc_ & CPU_SUSPEND))
+        {
+            ++cpu.nr_instructions;
+            cpu_fetch_instruction();
+
+            struct instruction *instruction = &instruction_tbl[cpu.opcode_];
+            cpu.program_counter_.word_ -= instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
+            log_state();
+            log_write("\n\0");
+            cpu.program_counter_.word_ += instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
+
+            cpu_execute_instruction();
+            if((cpu.irq_ && !(cpu.status_ & CPU_STATUS_INTERUPT)) || cpu.nmi_ )
+            {
+                cpu.opcode_ = 0x00;
+            }
+        }
+    }}
 
 
 omp_lock_t writelock;

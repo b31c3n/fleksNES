@@ -58,7 +58,8 @@ struct c6502
 
 void cpu_fetch_instruction();
 void cpu_execute_instruction();
-void cpu_tick();
+void cpu_wait_for_tick();
+void cpu_run();
 
 /**
  * Synchronized

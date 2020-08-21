@@ -11,55 +11,49 @@
 #include "mapper.h"
 #include "display.h"
 #include "instruction_tbl.h"
+#include "clock.h"
 
 int main(int argc, char **argv)
 {
-#pragma omp parallel
+    #pragma omp parallel
     {
-#pragma omp single nowait
+        #pragma omp single nowait
         {
-//            log_clear();
+            log_clear();
+            clock_init();
             mapper_init(argv[1]);
-            struct timespec
-                nanosecs = { .tv_nsec = 10, .tv_sec = 0 };
             cpu.program_counter_.word_ = 0xC000;
-
-            while(1)
+            #pragma omp parallel
             {
-                if(!(cpu.suspend_etc_ & CPU_SUSPEND))
+                #pragma omp single nowait
                 {
-                    ++cpu.nr_instructions;
-                    cpu_fetch_instruction();
-
-                    struct instruction *instruction = &instruction_tbl[cpu.opcode_];
-                    cpu.program_counter_.word_ -= instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
-                    log_state();
-                    log_write("\n\0");
-                    cpu.program_counter_.word_ += instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
-
-                    cpu_execute_instruction();
-                    if((cpu.irq_ && !(cpu.status_ & CPU_STATUS_INTERUPT)) || cpu.nmi_ )
-                    {
-                        cpu.opcode_ = 0x00;
-                    }
+                    clock_run();
                 }
-                nanosleep(&nanosecs, NULL);
+                #pragma omp single nowait
+                {
+                    cpu_run();
+                }
+                #pragma omp single nowait
+                {
+                    ppu_run();
+                }
             }
+
             mapper_destroy();
         }
-//#pragma omp single nowait
-//        {
-//            struct timespec
-//                nanosecs = { .tv_nsec = 11, .tv_sec = 0 };
-//            tui_init();
-//            while(1)
-//            {
-//                tui_draw();
-//                //tui_get_command();
-//                nanosleep(&nanosecs, NULL);
-//            }
-//            tui_destroy();
-//        }
+        #pragma omp single nowait
+        {
+            struct timespec
+                nanosecs = { .tv_nsec = 11, .tv_sec = 0 };
+            tui_init();
+            while(1)
+            {
+                tui_draw();
+                //tui_get_command();
+                nanosleep(&nanosecs, NULL);
+            }
+            tui_destroy();
+        }
 //#pragma omp single nowait
 //        {
 //            display_init();

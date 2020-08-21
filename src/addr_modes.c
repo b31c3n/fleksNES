@@ -39,7 +39,7 @@ void absolute_x(struct instruction *this)
 
     if(!(this->flags_ & CHECK_PAGECROSS) || page_crossed)
     {
-        cpu_tick();
+        cpu_wait_for_tick();
     }
 
     cpu.adh_adl_.word_ = address;
@@ -61,7 +61,7 @@ void absolute_y(struct instruction *this)
 
     if(!(this->flags_ & CHECK_PAGECROSS) || page_crossed)
     {
-        cpu_tick();
+        cpu_wait_for_tick();
     }
 
     cpu.adh_adl_.word_ = address;
@@ -111,7 +111,7 @@ void indirect(struct instruction *this)
     *cpu.adh_adl_.msb_ = 0;
     *cpu.adh_adl_.lsb_ = *cpu.opcode_args_.lsb_;
 
-    cpu_tick();
+    cpu_wait_for_tick();
     bus_read(&cpu_bus, cpu.adh_adl_.word_);
     *temp_addr.lsb_ = cpu_bus.data_;
 
@@ -132,7 +132,7 @@ void indexed_indirect(struct instruction *this)
     *cpu.adh_adl_.msb_ = 0;
     *cpu.adh_adl_.lsb_ = *cpu.opcode_args_.lsb_ + cpu.x_;
 
-    cpu_tick();
+    cpu_wait_for_tick();
     bus_read(&cpu_bus, cpu.adh_adl_.word_);
     *temp_addr.lsb_ = cpu_bus.data_;
 
@@ -153,7 +153,7 @@ void indirect_indexed(struct instruction *this)
     *cpu.adh_adl_.msb_ = 0;
     *cpu.adh_adl_.lsb_ = *cpu.opcode_args_.lsb_;
 
-    cpu_tick();
+    cpu_wait_for_tick();
     bus_read(&cpu_bus, cpu.adh_adl_.word_);
     *temp_addr.lsb_ = cpu_bus.data_;
 
@@ -171,7 +171,7 @@ void indirect_indexed(struct instruction *this)
 
     if(!(this->flags_ & CHECK_PAGECROSS) || page_crossed)
     {
-        cpu_tick();
+        cpu_wait_for_tick();
     }
     this->operand_ = &cpu_bus.data_;
 }
@@ -203,7 +203,7 @@ void zero_page_x(struct instruction *this)
 {
     *cpu.adh_adl_.msb_ = 0;
     *cpu.adh_adl_.lsb_ = *cpu.opcode_args_.lsb_ + cpu.x_;
-    cpu_tick();
+    cpu_wait_for_tick();
     this->operand_ = &cpu_bus.data_;
 }
 
@@ -214,6 +214,6 @@ void zero_page_y(struct instruction *this)
 {
     *cpu.adh_adl_.msb_ = 0;
     *cpu.adh_adl_.lsb_ = *cpu.opcode_args_.lsb_ + cpu.y_;
-    cpu_tick();
+    cpu_wait_for_tick();
     this->operand_ = &cpu_bus.data_;
 }

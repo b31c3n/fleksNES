@@ -24,7 +24,7 @@ void bus_read(
 {
     bus->write_ = false;
     bus->address_ = address;
-    cpu_tick();
+    cpu_wait_for_tick();
 }
 
 void bus_write(
@@ -33,7 +33,7 @@ void bus_write(
 {
     bus->write_ = true;
     bus->address_ = address;
-    cpu_tick();
+    cpu_wait_for_tick();
 }
 
 void bus_listen(
