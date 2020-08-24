@@ -41,25 +41,25 @@ int main(int argc, char **argv)
 
             mapper_destroy();
         }
+//        #pragma omp single nowait
+//        {
+//            struct timespec
+//                nanosecs = { .tv_nsec = 11, .tv_sec = 0 };
+//            tui_init();
+//            while(1)
+//            {
+//                tui_draw();
+//                //tui_get_command();
+//                nanosleep(&nanosecs, NULL);
+//            }
+//            tui_destroy();
+//        }
         #pragma omp single nowait
         {
-            struct timespec
-                nanosecs = { .tv_nsec = 11, .tv_sec = 0 };
-            tui_init();
-            while(1)
-            {
-                tui_draw();
-                //tui_get_command();
-                nanosleep(&nanosecs, NULL);
-            }
-            tui_destroy();
+            display_init();
+            while(display_draw());
+            display_destroy();
         }
-//#pragma omp single nowait
-//        {
-//            display_init();
-//            while(display_draw());
-//            display_destroy();
-//        }
     }
     return 0;
 }

@@ -9,6 +9,7 @@ C_SRCS += \
 ../src/apu.c \
 ../src/bus.c \
 ../src/clock.c \
+../src/colors.c \
 ../src/cpu.c \
 ../src/display.c \
 ../src/dma.c \
@@ -29,6 +30,7 @@ OBJS += \
 ./src/apu.o \
 ./src/bus.o \
 ./src/clock.o \
+./src/colors.o \
 ./src/cpu.o \
 ./src/display.o \
 ./src/dma.o \
@@ -49,6 +51,7 @@ C_DEPS += \
 ./src/apu.d \
 ./src/bus.d \
 ./src/clock.d \
+./src/colors.d \
 ./src/cpu.d \
 ./src/display.d \
 ./src/dma.d \

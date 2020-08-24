@@ -20,7 +20,7 @@ struct peripheral
             .update         = generic_update,
             .address_max_   = 0x1FFF,
             .address_min_   = 0x0,
-            .mirror_mask_   = 0x0800,
+            .mirror_mask_   = 0x07FF,
             .memory_        = &ram,
             .bus_           = &cpu_bus,
             .irq_line_      = 0,
