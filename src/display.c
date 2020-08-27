@@ -21,8 +21,8 @@ void display_init()
             "OpenGL",
             100,
             100,
-            SCREEN_W,
-            SCREEN_H,
+            SCREEN_W * 3,
+            SCREEN_H * 3,
             SDL_WINDOW_OPENGL);
 
     display.renderer_ = SDL_CreateRenderer(
@@ -37,6 +37,12 @@ void display_init()
             SCREEN_W,
             SCREEN_H);
 
+    display.surface_ = SDL_CreateRGBSurfaceWithFormat(
+            0,
+            SCREEN_W,
+            SCREEN_H,
+            0,
+            SDL_PIXELFORMAT_RGBA32);
 
 }
 
@@ -110,6 +116,7 @@ bool display_draw()
 
 void display_destroy()
 {
+    SDL_FreeSurface(display.surface_);
     SDL_DestroyTexture(display.texture_);
     SDL_DestroyRenderer(display.renderer_);
     SDL_DestroyWindow(display.window_);

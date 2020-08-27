@@ -15,6 +15,8 @@
 
 int main(int argc, char **argv)
 {
+    display_init();
+
     #pragma omp parallel
     {
         #pragma omp single nowait
@@ -39,6 +41,15 @@ int main(int argc, char **argv)
                 }
             }
 
+            /*
+             *   omp parrallel
+             *   while(1)
+             *      run cpu 1/3 cycle
+             *      run ppu 1 cycle
+             *      clock 1 cycle
+             *
+             */
+
             mapper_destroy();
         }
 //        #pragma omp single nowait
@@ -56,10 +67,10 @@ int main(int argc, char **argv)
 //        }
         #pragma omp single nowait
         {
-            display_init();
             while(display_draw());
-            display_destroy();
         }
     }
+
+    display_destroy();
     return 0;
 }
