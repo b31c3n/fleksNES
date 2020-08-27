@@ -12,11 +12,25 @@
 struct bus
      cpu_bus =
      {
-             .listeners_ = { &cpu_peripheral_ram, &cpu_peripheral_prgrom, &cpu_peripheral_prgram },
-             .nr_listeners_ = 3
+             .listeners_ =
+             {
+            		 &cpu_peripheral_ram,
+					 &cpu_peripheral_prgrom,
+					 &cpu_peripheral_prgram,
+					 &cpu_peripheral_ppu,
+             },
+             .nr_listeners_ = 4
      };
 struct bus
-     ppu_bus;
+     ppu_bus=
+     {
+             .listeners_ =
+             {
+            		 &ppu_peripheral_chrrom,
+					 &ppu_peripheral_palette
+             },
+             .nr_listeners_ = 2
+     };
 
 void bus_read(
         struct bus *bus,
@@ -24,7 +38,8 @@ void bus_read(
 {
     bus->write_ = false;
     bus->address_ = address;
-    cpu_wait_for_tick();
+    if(bus == &cpu_bus)
+    	cpu_wait_for_tick();
 }
 
 void bus_write(
@@ -33,7 +48,8 @@ void bus_write(
 {
     bus->write_ = true;
     bus->address_ = address;
-    cpu_wait_for_tick();
+    if(bus == &cpu_bus)
+    	cpu_wait_for_tick();
 }
 
 void bus_listen(

@@ -118,10 +118,19 @@ void cpu_run()
             cpu_fetch_instruction();
 
             struct instruction *instruction = &instruction_tbl[cpu.opcode_];
-            cpu.program_counter_.word_ -= instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
-            log_state();
-            log_write("\n\0");
-            cpu.program_counter_.word_ += instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
+
+            /*
+             * logging
+             */
+
+//            cpu.program_counter_.word_ -= instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
+//            log_state();
+//            log_write("\n\0");
+//            cpu.program_counter_.word_ += instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
+
+            /*
+             *  end logging
+             */
 
             cpu_execute_instruction();
             if((cpu.irq_ && !(cpu.status_ & CPU_STATUS_INTERUPT)) || cpu.nmi_ )

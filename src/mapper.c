@@ -9,6 +9,7 @@
 #include "mapper.h"
 #include "bus.h"
 #include "peripheral.h"
+#include "cpu.h"
 
 /**
  * 16 byte header
@@ -77,7 +78,9 @@ void mapper000_chrrom_write(struct peripheral *this)
 }
 void mapper000_chrrom_read(struct peripheral *this)
 {
-
+    uint16_t
+        address = this->bus_->address_ & this->mirror_mask_ - this->address_min_;
+    this->bus_->data_ = this->memory_[address];
 }
 
 static uint8_t
@@ -154,6 +157,9 @@ void mapper_init(char *file_name)
         ppu_peripheral_chrrom.bus_ = &ppu_bus;
         ppu_peripheral_chrrom.irq_line_ = 0;
         ppu_peripheral_chrrom.memory_ = chr_rom;
+
+        *cpu.program_counter_.lsb_ = prg_rom[0x3FFC];
+        *cpu.program_counter_.msb_ = prg_rom[0x3FFD];
     }
     else exit(1);
 }

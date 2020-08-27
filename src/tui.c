@@ -48,7 +48,7 @@ void tui_destroy()
 }
 
 uint16_t
-    tui_mem_offsets[] = {0x0000, 0x0100};
+    tui_mem_offsets[] = {0x0000, 0x3f00};
 void tui_get_command()
 {
     char
@@ -140,6 +140,9 @@ void tui_mem1_update()
     uint16_t
         i = tui_mem_offsets[0],
         stop = i + 0xF0;
+
+    stop &= per_mem1->mirror_mask_;
+
     for(;i <= stop; i += 0x10)
     {
         wprintw(tui_mem1->window_, "\n%04x ",i);
@@ -177,6 +180,9 @@ void tui_mem2_update()
     uint16_t
         i = tui_mem_offsets[1],
         stop = i + 0xF0;
+
+    stop &= per_mem2->mirror_mask_;
+
     for(;i <= stop; i += 0x10)
     {
         wprintw(tui_mem2->window_, "\n%04x ",i);
@@ -295,7 +301,7 @@ struct tui_comp
         .h_ = 18
     },
     {
-        .component_ = &cpu_peripheral_ram,
+        .component_ = &ppu_peripheral_palette,
 
         .update = tui_mem2_update,
         .init = tui_mem2_init,

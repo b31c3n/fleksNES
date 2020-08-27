@@ -19,6 +19,7 @@ C_SRCS += \
 ../src/log.c \
 ../src/main.c \
 ../src/mapper.c \
+../src/palette.c \
 ../src/peripheral.c \
 ../src/ppu.c \
 ../src/ram.c \
@@ -40,6 +41,7 @@ OBJS += \
 ./src/log.o \
 ./src/main.o \
 ./src/mapper.o \
+./src/palette.o \
 ./src/peripheral.o \
 ./src/ppu.o \
 ./src/ram.o \
@@ -61,6 +63,7 @@ C_DEPS += \
 ./src/log.d \
 ./src/main.d \
 ./src/mapper.d \
+./src/palette.d \
 ./src/peripheral.d \
 ./src/ppu.d \
 ./src/ram.d \

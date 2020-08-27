@@ -15,14 +15,14 @@
 /**
  * PPU-registers
  */
-#define PPU_CTRL        0b00000001
-#define PPU_MASK        0b00000010
-#define PPU_STATUS      0b00000100
-#define PPU_OAM_ADDR    0b00001000
-#define PPU_OAM_DATA    0b00010000
-#define PPU_SCROLL      0b00100000
-#define PPU_ADDR        0b01000000
-#define PPU_DATA        0b10000000
+#define PPU_CTRL        0
+#define PPU_MASK        1
+#define PPU_STATUS      2
+#define PPU_OAM_ADDR    3
+#define PPU_OAM_DATA    4
+#define PPU_SCROLL      5
+#define PPU_ADDR        6
+#define PPU_DATA        7
 
 /**
  * CTRL-bits
@@ -66,6 +66,7 @@ struct ppu_2C0X
         regs_[8],
         oam_prm_[256],
         oam_sec_[32],
+		ppu_data_buffer_,
         read_flags_,
         write_flags_;
     uint16_t
