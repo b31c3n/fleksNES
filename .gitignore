@@ -10,4 +10,6 @@ Debug/src/*
 
 perf*
 
-
+.project
+.cproject
+.settings/
