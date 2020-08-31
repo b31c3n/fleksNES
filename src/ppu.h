@@ -60,6 +60,17 @@
 #define PPU_STATUS_SPRITE_ZERO_HIT  0b01000000
 #define PPU_STATUS_VBLANK           0b10000000
 
+/**
+ * VRAMreg-bitmasks
+ */
+#define VRAM_COARSE_X           0b0000000000011111
+#define VRAM_COARSE_Y           0b0000001111100000
+#define VRAM_TABLESEL          	0b0000110000000000
+#define VRAM_FINE_Y             0b0111000000000000
+#define VRAM_FINE_X            	0b0000000000000111
+#define VRAM_HIGH				0b0011111100000000
+#define VRAM_LOW				0b0000000011111111
+
 struct ppu_2C0X
 {
     uint8_t
@@ -68,10 +79,11 @@ struct ppu_2C0X
         oam_sec_[32],
 		ppu_data_buffer_,
         read_flags_,
-        write_flags_;
+        write_flags_,
+    	x_finescroll_;
     uint16_t
-        scroll_,
-        ppu_addr_;
+        vram_addr_,
+    	tram_addr_;
     bool
         latch_;
 
