@@ -374,8 +374,8 @@ void dec(struct instruction *this)
         *operand = this->operand_,
         result = --(*operand);
 
-    if(result & CPU_STATUS_NEGATIVE)  cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                        cpu.status_ &= ~CPU_STATUS_NEGATIVE;
+    if(result & CPU_STATUS_NEGATIVE)    cpu.status_ |= CPU_STATUS_NEGATIVE;
+    else                                cpu.status_ &= ~CPU_STATUS_NEGATIVE;
 
     if(result)  cpu.status_ &= ~CPU_STATUS_ZERO;
     else        cpu.status_ |= CPU_STATUS_ZERO;
