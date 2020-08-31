@@ -43,7 +43,7 @@ void log_state()
 
     int_to_binstring(cpu.status_, &instr_flags);
 
-    sprintf(buffer, "%04x  %02x %02x %02x      A:%02x X:%02x Y:%02x     flags:%s\0",
+    sprintf(buffer, "%04x  %02x %02x %02x      A:%02x X:%02x Y:%02x     flags:%s    sp:%04x\0",
             cpu.program_counter_.word_,
             cpu.opcode_,
             *cpu.opcode_args_.lsb_,
@@ -51,6 +51,7 @@ void log_state()
             cpu.accumulator_,
             cpu.x_,
             cpu.y_,
-            instr_flags);
+            instr_flags,
+            cpu.stack_pointer_.word_);
     log_write(buffer);
 }

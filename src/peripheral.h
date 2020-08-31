@@ -48,6 +48,6 @@ extern struct peripheral
     cpu_peripheral_prgram,
     ppu_peripheral_chrrom,
     ppu_peripheral_palette,
-    ppu_peripheral_vram;
+    ppu_peripheral_nametable;
 
 #endif /* SRC_PERIPHERAL_H_ */

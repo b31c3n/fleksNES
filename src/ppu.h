@@ -33,8 +33,8 @@
 #define PPU_CTRL_SPRITE_TABLE       0b00001000
 #define PPU_CTRL_BACKGROUND_ADDR    0b00010000
 #define PPU_CTRL_SPRITE_SIZE        0b00100000
-#define PPU_CTRL_PPU_MASTER         0b01000000
-#define PPU_CTRL_PPU_GENERATE_NMI   0b10000000
+#define PPU_CTRL_MASTER             0b01000000
+#define PPU_CTRL_GENERATE_NMI       0b10000000
 
 /**
  * MASK-bits
@@ -65,11 +65,11 @@
  */
 #define VRAM_COARSE_X           0b0000000000011111
 #define VRAM_COARSE_Y           0b0000001111100000
-#define VRAM_TABLESEL          	0b0000110000000000
+#define VRAM_TABLESEL           0b0000110000000000
 #define VRAM_FINE_Y             0b0111000000000000
-#define VRAM_FINE_X            	0b0000000000000111
-#define VRAM_HIGH				0b0011111100000000
-#define VRAM_LOW				0b0000000011111111
+#define VRAM_FINE_X             0b0000000000000111
+#define VRAM_HIGH               0b0011111100000000
+#define VRAM_LOW                0b0000000011111111
 
 struct ppu_2C0X
 {
@@ -77,13 +77,22 @@ struct ppu_2C0X
         regs_[8],
         oam_prm_[256],
         oam_sec_[32],
-		ppu_data_buffer_,
+        ppu_data_buffer_,
         read_flags_,
         write_flags_,
-    	x_finescroll_;
+        x_finescroll_,
+        shiftreg_tile_lsb,
+        shiftreg_tile_msb,
+        shiftreg_tile_id_,
+        shiftreg_attr_;
+
     uint16_t
         vram_addr_,
-    	tram_addr_;
+        tram_addr_,
+        scanline_,
+        cycle_,
+        frame_;
+
     bool
         latch_;
 

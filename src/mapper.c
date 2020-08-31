@@ -15,17 +15,7 @@
  * 16 byte header
  */
 struct ines_header
-{
-    char
-        constant_[4];
-    uint8_t
-        prgrom_size_,
-        chrrom_size_,
-        flags_[5],
-        padding_[5];
-    uint16_t
-        mapper_nr_;
-} header;
+	header;
 
 
 struct peripheral
@@ -101,6 +91,9 @@ void mapper_init(char *file_name)
 
     for(uint8_t *p = &header.flags_, i = 0; i < 5; ++i)
         p[i] = fgetc(file_p);
+
+    header.hor_mirror = header.flags_[0] & 0b01;
+    header.ver_mirror = header.flags_[0] & 0b10;
     /**
      * Check if bit 2-3 in byte 7 is equal to 2, then do INes 2.0 stuff, otherwise do the stuff below
      */

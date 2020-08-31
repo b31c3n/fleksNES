@@ -115,6 +115,8 @@ void cpu_run()
         if(!(cpu.suspend_etc_ & CPU_SUSPEND))
         {
             ++cpu.nr_instructions;
+            struct _16_bit
+                old_counter = cpu.program_counter_;
             cpu_fetch_instruction();
 
             struct instruction *instruction = &instruction_tbl[cpu.opcode_];
@@ -123,10 +125,10 @@ void cpu_run()
              * logging
              */
 
-//            cpu.program_counter_.word_ -= instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
-//            log_state();
-//            log_write("\n\0");
-//            cpu.program_counter_.word_ += instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
+            cpu.program_counter_.word_ -= instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
+            log_state();
+            log_write("\n\0");
+            cpu.program_counter_.word_ += instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
 
             /*
              *  end logging

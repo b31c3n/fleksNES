@@ -20,7 +20,8 @@ struct bus
     uint16_t
         address_;
     bool
-        write_;
+        write_,
+        servered_;
     struct peripheral
         *listeners_[10];
 };

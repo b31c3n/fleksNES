@@ -48,7 +48,7 @@ void tui_destroy()
 }
 
 uint16_t
-    tui_mem_offsets[] = {0x0000, 0x3f00};
+    tui_mem_offsets[] = {0x2000, 0x3f00};
 void tui_get_command()
 {
     char
@@ -291,7 +291,7 @@ struct tui_comp
     tui_components[TUI_NR_COMPS] =
 {
     {
-        .component_ = &cpu_peripheral_ram,
+        .component_ = &ppu_peripheral_nametable,
 
         .update = tui_mem1_update,
         .init = tui_mem1_init,
