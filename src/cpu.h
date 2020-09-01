@@ -21,6 +21,12 @@
 #define CPU_STATUS_NEGATIVE     0b10000000
 
 /**
+ * NMI
+ */
+
+#define NMI_PPU                 0b00000001
+
+/**
  * CPU-other stuff
  */
 #define CPU_RESET               0b00000001

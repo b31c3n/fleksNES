@@ -239,7 +239,16 @@ void brk(struct instruction *this)
     bus_write(&cpu_bus, cpu.stack_pointer_.word_);
     --*cpu.stack_pointer_.lsb_;
 
-    effective_addr.word_ = cpu.nmi_ ? nmi_addr : irq_addr;
+    if(cpu.nmi_)
+    {
+        effective_addr.word_ = nmi_addr;
+        cpu.nmi_ = 0;
+    }
+    else
+    {
+        effective_addr.word_ = irq_addr;
+        cpu.irq_ = 0;
+    }
 
     bus_read(&cpu_bus, effective_addr.word_);
     *cpu.program_counter_.lsb_ = cpu_bus.data_;

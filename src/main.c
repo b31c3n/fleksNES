@@ -23,7 +23,7 @@ int main(int argc, char **argv)
             log_clear();
             clock_init();
             mapper_init(argv[1]);
-            cpu.program_counter_.word_ = 0xC000;
+//            cpu.program_counter_.word_ = 0xC000;
             #pragma omp parallel
             {
                 #pragma omp single nowait
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
             while(1)
             {
                 tui_draw();
-                //tui_get_command();
+//                tui_get_command();
                 nanosleep(&nanosecs, NULL);
             }
             tui_destroy();

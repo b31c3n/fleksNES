@@ -1,1 +1,1 @@
-awk 'FNR==NR{a[$1];next};!(tolower($1) in a){ print NR; exit}' log nestest.log
+awk 'FNR==NR{a[$1];next};!(tolower($1) in a){ print $1; print NR; exit}' log_temp nestest.log

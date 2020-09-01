@@ -8,6 +8,7 @@
 #include "ppu.h"
 #include "clock.h"
 #include "helper_funcs.h"
+#include "cpu.h"
 
 void ppu_run(void)
 {
@@ -36,7 +37,9 @@ void ppu_run(void)
              */
             if(ppu.scanline_ == 241 && ppu.cycle_ == 1)
             {
-                ppu.regs_[PPU_STATUS] = PPU_STATUS | PPU_STATUS_VBLANK;;
+                ppu.regs_[PPU_STATUS] = PPU_STATUS | PPU_STATUS_VBLANK;
+                if(ppu.regs_[PPU_CTRL] &= PPU_CTRL_GENERATE_NMI)
+                    cpu.nmi_ |= NMI_PPU;
             }
             else if(ppu.scanline_ == 261 && ppu.cycle_ == 1)
             {

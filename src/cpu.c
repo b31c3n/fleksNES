@@ -15,6 +15,7 @@ int testvar = 0;
 
 struct c6502 cpu =
 {
+        .status_ = 0x24,
         .opcode_ = 0xEA,
         .stack_pointer_ =
         {
@@ -80,7 +81,7 @@ void cpu_execute_instruction()
     }
 
     ++testvar;
-    if(testvar == 10000) exit(0);
+//    if(testvar == 10000) exit(0);
     instruction->execute(instruction);
 
     if(instruction->flags_ & WRITE_DATA)
@@ -109,13 +110,25 @@ void cpu_run()
 {
     while(1)
     {
+        cpu.status_ |= CPU_STATUS_NOT_USED;
         if(!(cpu.suspend_etc_ & CPU_SUSPEND))
         {
-            ++cpu.nr_instructions;
-            struct _16_bit
-                old_counter = cpu.program_counter_;
-            cpu_fetch_instruction();
 
+            if(cpu.nmi_ )
+            {
+                cpu.opcode_ = 0x00;
+            }
+            else if((cpu.irq_ && !(cpu.status_ & CPU_STATUS_INTERUPT)))
+            {
+                cpu.opcode_ = 0x00;
+            }
+            else
+            {
+                ++cpu.nr_instructions;
+                struct _16_bit
+                    old_counter = cpu.program_counter_;
+                cpu_fetch_instruction();
+            }
             struct instruction *instruction = &instruction_tbl[cpu.opcode_];
 
             /*
@@ -133,10 +146,6 @@ void cpu_run()
 
             cpu_execute_instruction();
 
-            if((cpu.irq_ && !(cpu.status_ & CPU_STATUS_INTERUPT)) || cpu.nmi_ )
-            {
-                cpu.opcode_ = 0x00;
-            }
         }
     }}
 
