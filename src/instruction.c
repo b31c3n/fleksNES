@@ -23,9 +23,18 @@ void branching_stuff(struct instruction *this)
     *cpu.program_counter_.lsb_ = result;
     cpu_wait_for_tick();
 
-    if(negative && borrow)
+//    if(carry || !(result & CPU_STATUS_NEGATIVE))
+//                cpu.status_ |= CPU_STATUS_CARRY;
+//    else        cpu.status_ &= ~CPU_STATUS_CARRY;
+
+//    if(negative && borrow)
+//    {
+//        *cpu.program_counter_.msb_ += ~borrow;
+//        cpu_wait_for_tick();
+//    }
+    if(negative && !carry)
     {
-        *cpu.program_counter_.msb_ += ~borrow;
+        *cpu.program_counter_.msb_ += 0xFF;
         cpu_wait_for_tick();
     }
     else if(!negative && carry)

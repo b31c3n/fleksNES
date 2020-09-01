@@ -11,6 +11,8 @@
 #include "instruction_tbl.h"
 #include "clock.h"
 
+int testvar = 0;
+
 struct c6502 cpu =
 {
         .opcode_ = 0xEA,
@@ -75,21 +77,16 @@ void cpu_execute_instruction()
     if(instruction->flags_ & READ_DATA)
     {
         bus_read(&cpu_bus, cpu.adh_adl_.word_);
-//        log_state();
-//        log_write(" (R)\n\0");
     }
-//    log_state();
-//    log_write("\n\0");
-    instruction->execute(instruction);
 
+    ++testvar;
+    if(testvar == 10000) exit(0);
+    instruction->execute(instruction);
 
     if(instruction->flags_ & WRITE_DATA)
     {
         bus_write(&cpu_bus, cpu.adh_adl_.word_);
-//        log_state();
-//        log_write(" (W)\n\0");
     }
-//    log_write("\n\0");
 
 
 }
@@ -125,16 +122,17 @@ void cpu_run()
              * logging
              */
 
-            cpu.program_counter_.word_ -= instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
-            log_state();
-            log_write("\n\0");
-            cpu.program_counter_.word_ += instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
+//            cpu.program_counter_.word_ -= instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
+//            log_state();
+//            log_write("\n\0");
+//            cpu.program_counter_.word_ += instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
 
             /*
              *  end logging
              */
 
             cpu_execute_instruction();
+
             if((cpu.irq_ && !(cpu.status_ & CPU_STATUS_INTERUPT)) || cpu.nmi_ )
             {
                 cpu.opcode_ = 0x00;
