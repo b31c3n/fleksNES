@@ -11,7 +11,7 @@
 #include "instruction_tbl.h"
 #include "clock.h"
 
-int testvar = 0;
+bool shutdown = 0;
 
 struct c6502 cpu =
 {
@@ -80,8 +80,6 @@ void cpu_execute_instruction()
         bus_read(&cpu_bus, cpu.adh_adl_.word_);
     }
 
-    ++testvar;
-//    if(testvar == 10000) exit(0);
     instruction->execute(instruction);
 
     if(instruction->flags_ & WRITE_DATA)
@@ -93,9 +91,8 @@ void cpu_execute_instruction()
 }
 
 
-void cpu_wait_for_tick()
+void tick()
 {
-    sem_wait(&nes_clock.cpu_sem_);
 //    puts("cpu");
     // Peripheral reads on buses
     for(int i = 0; i < cpu_bus.nr_listeners_; ++i)
@@ -103,12 +100,13 @@ void cpu_wait_for_tick()
         bus_listen(cpu_bus.listeners_[i], &cpu_bus);
     }
     ++cpu.nr_ticks_;
-    sem_post(&nes_clock.cclock_sem_);
+
+    ppu_run(), ppu_run(), ppu_run();
 }
 
 void cpu_run()
 {
-    while(1)
+    while(!shutdown)
     {
         cpu.status_ |= CPU_STATUS_NOT_USED;
         if(!(cpu.suspend_etc_ & CPU_SUSPEND))

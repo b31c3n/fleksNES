@@ -38,6 +38,8 @@
 #include "bus.h"
 #include "16_bit.h"
 
+extern bool
+    shutdown;
 
 struct c6502
 {
@@ -64,7 +66,7 @@ struct c6502
 
 void cpu_fetch_instruction();
 void cpu_execute_instruction();
-void cpu_wait_for_tick();
+void tick();
 void cpu_run();
 
 /**

@@ -7,6 +7,7 @@
 
 #include "display.h"
 #include "colors.h"
+#include "peripheral.h"
 struct display display;
 
 void display_init()
@@ -87,9 +88,9 @@ bool display_draw()
         uint32_t
             color = SDL_MapRGB(
                         format,
-                        COLORS[i % 64].r,
-                        COLORS[i % 64].g,
-                        COLORS[i % 64].b);
+                        COLORS[ppu_peripheral_palette.memory_[(i / 8) % 32]].r,
+                        COLORS[ppu_peripheral_palette.memory_[(i / 8) % 32]].g,
+                        COLORS[ppu_peripheral_palette.memory_[(i / 8) % 32]].b);
 
         pixels[i] = color;
     }

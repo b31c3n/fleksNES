@@ -21,7 +21,7 @@ void branching_stuff(struct instruction *this)
         negative = *cpu.opcode_args_.lsb_ & 0x80;
 
     *cpu.program_counter_.lsb_ = result;
-    cpu_wait_for_tick();
+    tick();
 
 //    if(carry || !(result & CPU_STATUS_NEGATIVE))
 //                cpu.status_ |= CPU_STATUS_CARRY;
@@ -35,12 +35,12 @@ void branching_stuff(struct instruction *this)
     if(negative && !carry)
     {
         *cpu.program_counter_.msb_ += 0xFF;
-        cpu_wait_for_tick();
+        tick();
     }
     else if(!negative && carry)
     {
         *cpu.program_counter_.msb_ += carry;
-        cpu_wait_for_tick();
+        tick();
     }
 }
 
@@ -288,7 +288,7 @@ void bvs(struct instruction *this)
  */
 void clc(struct instruction *this)
 {
-    cpu_wait_for_tick(); // Need 1 cycly for instruction to be interpreted
+    tick(); // Need 1 cycly for instruction to be interpreted
     cpu.status_ &= ~CPU_STATUS_CARRY;
 }
 
@@ -298,7 +298,7 @@ void clc(struct instruction *this)
  */
 void cld(struct instruction *this)
 {
-    cpu_wait_for_tick(); // Need 1 cycly for instruction to be interpreted
+    tick(); // Need 1 cycly for instruction to be interpreted
     cpu.status_ &= ~CPU_STATUS_DECIMAL;
 }
 
@@ -308,7 +308,7 @@ void cld(struct instruction *this)
  */
 void cli(struct instruction *this)
 {
-    cpu_wait_for_tick(); // Need 1 cycly for instruction to be interpreted
+    tick(); // Need 1 cycly for instruction to be interpreted
     cpu.status_ &= ~CPU_STATUS_INTERUPT;
 }
 
@@ -318,7 +318,7 @@ void cli(struct instruction *this)
  */
 void clv(struct instruction *this)
 {
-    cpu_wait_for_tick(); // Need 1 cycly for instruction to be interpreted
+    tick(); // Need 1 cycly for instruction to be interpreted
     cpu.status_ &= ~CPU_STATUS_OVERFLOW;
 }
 
@@ -552,7 +552,7 @@ void jsr(struct instruction *this)
     --*cpu.stack_pointer_.lsb_;
 
     cpu.program_counter_.word_ = cpu.opcode_args_.word_;
-    cpu_wait_for_tick();
+    tick();
 }
 
 /**
