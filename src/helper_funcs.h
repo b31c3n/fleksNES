@@ -12,8 +12,6 @@
 
 void int_to_binstring(uint8_t integer, char *string);
 void int_to_hexstring(uint8_t integer, char *string);
-int strip_zeros(int mask, int number);
-int add_zeros(int mask, int number);
 
 
 #endif /* SRC_HELPER_FUNCS_H_ */

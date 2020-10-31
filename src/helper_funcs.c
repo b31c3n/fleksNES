@@ -27,16 +27,3 @@ void int_to_hexstring(uint8_t integer, char *string)
     sprintf(string, "%02x", integer);
 }
 
-int strip_zeros(int mask, int number)
-{
-	int
-		zeros = __builtin_ffs(mask) - 1;
-	return number >> zeros;
-}
-
-int add_zeros(int mask, int number)
-{
-	int
-		zeros = __builtin_ffs(mask) - 1;
-	return number << zeros;
-}

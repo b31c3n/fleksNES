@@ -83,14 +83,14 @@ bool display_draw()
 
     pixelcount = pitch / 4 * SCREEN_H;
 
-    for(size_t i = 0; i < pixelcount; ++i)
+    for(size_t i = 0; i < 1024; ++i)
     {
         uint32_t
             color = SDL_MapRGB(
                         format,
-                        COLORS[ppu_peripheral_palette.memory_[(i / 8) % 32]].r,
-                        COLORS[ppu_peripheral_palette.memory_[(i / 8) % 32]].g,
-                        COLORS[ppu_peripheral_palette.memory_[(i / 8) % 32]].b);
+                        COLORS[ppu_peripheral_nametable.memory_[i]].r,
+                        COLORS[ppu_peripheral_nametable.memory_[i]].g,
+                        COLORS[ppu_peripheral_nametable.memory_[i]].b);
 
         pixels[i] = color;
     }

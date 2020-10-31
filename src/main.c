@@ -15,14 +15,25 @@
 #include "instruction_tbl.h"
 #include "clock.h"
 
-void ctrl_c(int signal)
+void sigint(int signal)
 {
     shutdown = 1;
+    tui_destroy();
+    puts("Interrupted!");
+}
+
+void sigsegv(int signal)
+{
+    shutdown = 1;
+    tui_destroy();
+    puts("Segfault!");
+
 }
 
 int main(int argc, char **argv)
 {
-    signal(SIGINT, ctrl_c);
+    signal(SIGINT, sigint);
+    signal(SIGSEGV, sigsegv);
 
     #pragma omp parallel
     {
@@ -44,7 +55,7 @@ int main(int argc, char **argv)
                 tui_draw();
                 nanosleep(&nanosecs, NULL);
             }
-            tui_destroy();
+            //tui_destroy();
         }
         #pragma omp single nowait
         {

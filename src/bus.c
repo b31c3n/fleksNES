@@ -62,11 +62,11 @@ void bus_listen(
         struct bus *bus)
 {
     if(peripheral->address_min_ <= bus->address_ &&
-       peripheral->address_max_ >= bus->address_ &&
-       !bus->servered_)
+       peripheral->address_max_ >= bus->address_)// &&
+//       !bus->servered_)
     {
         if(bus->write_) peripheral->write(peripheral);
         else            peripheral->read(peripheral);
-        bus->servered_ = true;
+//        bus->servered_ = true;
     }
 }
