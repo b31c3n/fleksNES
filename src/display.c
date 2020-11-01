@@ -83,16 +83,51 @@ bool display_draw()
 
     pixelcount = pitch / 4 * SCREEN_H;
 
-    for(size_t i = 0; i < 1024; ++i)
+    for(size_t tile_idx = 0;
+        tile_idx < 32 * 30;
+        ++tile_idx
+    )
     {
-        uint32_t
-            color = SDL_MapRGB(
-                        format,
-                        COLORS[ppu_peripheral_nametable.memory_[i]].r,
-                        COLORS[ppu_peripheral_nametable.memory_[i]].g,
-                        COLORS[ppu_peripheral_nametable.memory_[i]].b);
 
-        pixels[i] = color;
+        for(size_t pixel_x = (tile_idx % 32) * 8,
+            pixel_y = (tile_idx / 32) * 8,
+            cnt_y = 0,
+            cnt_x = 0;
+
+            cnt_y < 8;
+
+            ++cnt_y,
+            ++pixel_y,
+            cnt_x = 0,
+            pixel_x = (tile_idx % 32) * 8)
+        {
+
+            uint8_t
+                pattern_idx = ppu_peripheral_nametable.memory_[tile_idx];
+
+            uint16_t
+                offset = cnt_y * 128,
+                low_order_b = ppu_peripheral_chrrom.memory_[pattern_idx + offset],
+                high_order_b = ppu_peripheral_chrrom.memory_[pattern_idx + 1 + offset] << 1;
+
+            for(; cnt_x < 8; ++cnt_x, ++pixel_x)
+            {
+                uint8_t
+                    pal_val = high_order_b & 0b10 + low_order_b & 0b01;
+                uint32_t
+                     color = SDL_MapRGB(
+                                 format,
+                                 COLORS[pal_val].r,
+                                 COLORS[pal_val].g,
+                                 COLORS[pal_val].b);
+                pixels[pixel_x + pixel_y * 256] = color;
+                low_order_b >>= 1,
+                high_order_b >>= 1;
+
+            }
+        }
+
+
     }
 
     SDL_FreeFormat(format);
