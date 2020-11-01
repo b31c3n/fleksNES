@@ -291,7 +291,7 @@ struct tui_comp
     tui_components[TUI_NR_COMPS] =
 {
     {
-        .component_ = &ppu_peripheral_nametable,
+        .component_ = &ppu_peripheral_chrrom,
 
         .update = tui_mem1_update,
         .init = tui_mem1_init,
@@ -301,7 +301,7 @@ struct tui_comp
         .h_ = 18
     },
     {
-        .component_ = &ppu_peripheral_palette,
+        .component_ = &ppu_peripheral_nametable,
 
         .update = tui_mem2_update,
         .init = tui_mem2_init,
