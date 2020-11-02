@@ -86,8 +86,6 @@ void cpu_execute_instruction()
     {
         bus_write(&cpu_bus, cpu.adh_adl_.word_);
     }
-
-
 }
 
 
@@ -102,6 +100,7 @@ void tick()
     ++cpu.nr_ticks_;
 
     ppu_run(), ppu_run(), ppu_run();
+    //nanosleep(&nanosecs, NULL);
 }
 
 void cpu_run()

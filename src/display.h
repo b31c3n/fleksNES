@@ -34,7 +34,7 @@ struct display
 
 
 void display_init();
-bool dispaly_draw();
+bool display_draw();
 void display_destroy();
 
 #endif /* SRC_DISPLAY_H_ */

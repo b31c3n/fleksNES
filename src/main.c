@@ -5,7 +5,6 @@
  *      Author: David Jonsson
  */
 #include <omp.h>
-#include <time.h>
 #include <signal.h>
 
 #include "cpu.h"
@@ -14,6 +13,7 @@
 #include "display.h"
 #include "instruction_tbl.h"
 #include "clock.h"
+
 
 void sigint(int signal)
 {
@@ -45,22 +45,24 @@ int main(int argc, char **argv)
             cpu_run();
             mapper_destroy();
         }
-        #pragma omp single nowait
-        {
-            struct timespec
-                nanosecs = { .tv_nsec = 11, .tv_sec = 0 };
-            tui_init();
-            while(!shutdown)
-            {
-                tui_draw();
-                nanosleep(&nanosecs, NULL);
-            }
-            //tui_destroy();
-        }
+//        #pragma omp single nowait
+//        {
+//            tui_init();
+//            while(!shutdown)
+//            {
+//                tui_draw();
+//                //nanosleep(&nanosecs, NULL);
+//            }
+//            //tui_destroy();
+//        }
         #pragma omp single nowait
         {
             display_init();
-            while(!shutdown) display_draw();
+            while(!shutdown)
+            {
+                display_draw();
+                //nanosleep(&nanosecs, NULL);
+            }
             display_destroy();
         }
     }

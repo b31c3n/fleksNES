@@ -9,8 +9,11 @@
 #define SRC_CLOCK_H_
 
 #include <semaphore.h>
-
 #include <stdint.h>
+#include <time.h>
+
+extern struct timespec
+    nanosecs;
 
 struct clock_struct
 {
