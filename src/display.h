@@ -18,17 +18,17 @@
 
 struct display
 {
-    SDL_Window*
-        window_;
+    SDL_Window
+        *window_;
     SDL_Event
         event_;
-    SDL_Renderer*
-        renderer_;
+    SDL_Renderer
+        *renderer_;
 
-    SDL_Surface*
-        surface_;
-    SDL_Texture*
-        texture_;
+    SDL_Surface
+        *surface_;
+    SDL_Texture
+        *texture_;
 
 } extern display;
 
@@ -36,5 +36,6 @@ struct display
 void display_init();
 bool display_draw();
 void display_destroy();
+void capture_events();
 
 #endif /* SRC_DISPLAY_H_ */

@@ -61,6 +61,7 @@ int main(int argc, char **argv)
             while(!shutdown)
             {
                 display_draw();
+                capture_events();
                 //nanosleep(&nanosecs, NULL);
             }
             display_destroy();

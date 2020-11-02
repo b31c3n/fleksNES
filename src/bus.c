@@ -14,12 +14,13 @@ struct bus
     {
         .listeners_ =
         {
+            &cpu_peripheral_apu,
             &cpu_peripheral_ram,
             &cpu_peripheral_prgrom,
             &cpu_peripheral_prgram,
             &cpu_peripheral_ppu,
         },
-        .nr_listeners_ = 4,
+        .nr_listeners_ = 5,
         .servered_ = true,
     };
 struct bus

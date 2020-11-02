@@ -8,6 +8,7 @@
 #include "display.h"
 #include "colors.h"
 #include "peripheral.h"
+#include "apu.h"
 struct display display;
 
 void display_init()
@@ -58,9 +59,9 @@ static void draw_background(const SDL_PixelFormat *format, Uint32 *pixels)
     )
     {
         uint16_t
-            pattern_idx = ((uint16_t) ppu_peripheral_nametable.memory_[tile_idx]) * 0x10;
-        uint8_t
-            palette = ppu_peripheral_nametable.memory_[tile_idx / 2 + tile_idx / (32 * 2) + 0x3C0];
+            pattern_idx = ((uint16_t) ppu_peripheral_nametable.memory_[tile_idx]) * 0x10,
+            attribute = (tile_idx / 4) % (8 * 1) + tile_idx / (32 * 4) * 8 + 0x3C0,
+            palette_idx = ppu_peripheral_nametable.memory_[attribute];
 
         for(size_t pixel_y = (tile_idx / 32) * 8,
             cnt_y = 0;
@@ -69,8 +70,10 @@ static void draw_background(const SDL_PixelFormat *format, Uint32 *pixels)
             ++pixel_y)
         {
             uint16_t
-                low_order_b = (uint16_t) ppu_peripheral_chrrom.memory_[pattern_idx + cnt_y],
-                high_order_b = ((uint16_t) ppu_peripheral_chrrom.memory_[pattern_idx + cnt_y * 8]) << 1;
+                pattern_lsb = pattern_idx + cnt_y,
+                pattern_msb = pattern_idx + cnt_y + 8,
+                low_order_b = (uint16_t) ppu_peripheral_chrrom.memory_[pattern_lsb],
+                high_order_b = ((uint16_t) ppu_peripheral_chrrom.memory_[pattern_msb]) << 1;
 
             for(size_t cnt_x = 0,
                 pixel_x = (tile_idx % 32) * 8 + 7;
@@ -83,7 +86,7 @@ static void draw_background(const SDL_PixelFormat *format, Uint32 *pixels)
                 uint8_t
                     pal_val = (high_order_b & 0b10) + (low_order_b & 0b01);
                 uint8_t
-                    color_idx = pal_val + (((palette >> pal_shift * 2) & 0b11) << 2);
+                    color_idx = pal_val | (((palette_idx >> (pal_shift * 2)) & 0b11) << 2);
 
                 /*
                  * Redirect to backdrop color if 2 LSBits of color idx is 0
@@ -96,7 +99,108 @@ static void draw_background(const SDL_PixelFormat *format, Uint32 *pixels)
                                  COLORS[ppu_peripheral_palette.memory_[color_idx]].r,
                                  COLORS[ppu_peripheral_palette.memory_[color_idx]].g,
                                  COLORS[ppu_peripheral_palette.memory_[color_idx]].b);
+
                 pixels[pixel_x + pixel_y * 256] = color;
+            }
+        }
+    }
+}
+
+void capture_events()
+{
+    while(SDL_PollEvent(&display.event_))
+    {
+        if(display.event_.type == SDL_KEYDOWN)
+        {
+            switch (display.event_.key.keysym.sym)
+            {
+                case SDLK_f :
+                {
+                    controller_buffer |= 0b10000000;
+                    break;
+                }
+                case SDLK_s :
+                {
+                    controller_buffer |= 0b01000000;
+                    break;
+                }
+                case SDLK_d :
+                {
+                    controller_buffer |= 0b00100000;
+                    break;
+                }
+                case SDLK_e :
+                {
+                    controller_buffer |= 0b00010000;
+                    break;
+                }
+                case SDLK_o :
+                {
+                    controller_buffer |= 0b00001000;
+                    break;
+                }
+                case SDLK_u :
+                {
+                    controller_buffer |= 0b00000100;
+                    break;
+                }
+                case SDLK_j :
+                {
+                    controller_buffer |= 0b00000010;
+                    break;
+                }
+                case SDLK_l :
+                {
+                    controller_buffer |= 0b00000001;
+                    break;
+                }
+            }
+        }
+
+        if(display.event_.type == SDL_KEYUP)
+        {
+            switch (display.event_.key.keysym.sym)
+            {
+                case SDLK_f :
+                {
+                    controller_buffer ^= 0b10000000;
+                    break;
+                }
+                case SDLK_s :
+                {
+                    controller_buffer ^= 0b01000000;
+                    break;
+                }
+                case SDLK_d :
+                {
+                    controller_buffer ^= 0b00100000;
+                    break;
+                }
+                case SDLK_e :
+                {
+                    controller_buffer ^= 0b00010000;
+                    break;
+                }
+                case SDLK_o :
+                {
+                    controller_buffer ^= 0b00001000;
+                    break;
+                }
+                case SDLK_u :
+                {
+                    controller_buffer ^= 0b00000100;
+                    break;
+                }
+                case SDLK_j :
+                {
+                    controller_buffer ^= 0b00000010;
+                    break;
+                }
+                case SDLK_l :
+                {
+                    controller_buffer ^= 0b00000001;
+                    break;
+                }
             }
         }
     }
@@ -104,13 +208,6 @@ static void draw_background(const SDL_PixelFormat *format, Uint32 *pixels)
 
 bool display_draw()
 {
-    if(SDL_PollEvent(&display.event_))
-    {
-        if(display.event_.type == SDL_QUIT) return false;
-        if(display.event_.type == SDL_KEYUP &&
-                display.event_.key.keysym.sym == SDLK_ESCAPE) return false;
-    }
-
     const SDL_PixelFormat
         *format;
     Uint32
