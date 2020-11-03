@@ -8,41 +8,61 @@
 #include "bus.h"
 #include "instruction.h"
 #include "cpu.h"
+#include "ram.h"
+#include "ppu.h"
+#include "apu.h"
+#include "mapper.h"
+#include "nametable.h"
 
 struct bus
     cpu_bus =
     {
-        .listeners_ =
-        {
-            &cpu_peripheral_apu,
-            &cpu_peripheral_ram,
-            &cpu_peripheral_prgrom,
-            &cpu_peripheral_prgram,
-            &cpu_peripheral_ppu,
-        },
-        .nr_listeners_ = 5,
-        .servered_ = true,
+            .write =
+            {
+                    ram_write,
+                    ppu_write,
+                    apu_write,
+                    mapper_write_cpu_side,
+                    mapper_write_cpu_side,
+                    mapper_write_cpu_side,
+                    mapper_write_cpu_side,
+                    mapper_write_cpu_side,
+            },
+            .read =
+            {
+                    ram_read,
+                    ppu_read,
+                    apu_read,
+                    mapper_read_cpu_side,
+                    mapper_read_cpu_side,
+                    mapper_read_cpu_side,
+                    mapper_read_cpu_side,
+                    mapper_read_cpu_side,
+            },
     };
 struct bus
-    ppu_bus=
+    ppu_bus =
     {
-        .listeners_ =
-        {
-            &ppu_peripheral_chrrom,
-            &ppu_peripheral_nametable,
-            &ppu_peripheral_palette
-        },
-        .nr_listeners_ = 3,
-        .servered_ = true,
+            .write =
+            {
+                    ram_write,
+                    ntable_write,
+            },
+            .read =
+            {
+                    ram_read,
+                    ntable_read,
+            },
     };
 
 void bus_read(
         struct bus *bus,
         uint16_t address)
 {
-    bus->servered_ = false;
-    bus->write_ = false;
+    //bus->servered_ = false;
+    //bus->write_ = false;
     bus->address_ = address;
+    bus->read[(address) / 0x2000]();
     if(bus == &cpu_bus)
         tick();
 }
@@ -51,9 +71,10 @@ void bus_write(
         struct bus *bus,
         uint16_t address)
 {
-    bus->servered_ = false;
-    bus->write_ = true;
+    //bus->servered_ = false;
+    //bus->write_ = true;
     bus->address_ = address;
+    bus->write[(address) / 0x2000]();
     if(bus == &cpu_bus)
         tick();
 }
@@ -62,12 +83,12 @@ void bus_listen(
         struct peripheral *peripheral,
         struct bus *bus)
 {
-    if(peripheral->address_min_ <= bus->address_ &&
-       peripheral->address_max_ >= bus->address_)// &&
-//       !bus->servered_)
-    {
-        if(bus->write_) peripheral->write(peripheral);
-        else            peripheral->read(peripheral);
-//        bus->servered_ = true;
-    }
+//    if(peripheral->address_min_ <= bus->address_ &&
+//       peripheral->address_max_ >= bus->address_)// &&
+////       !bus->servered_)
+//    {
+//        if(bus->write_) peripheral->write(peripheral);
+//        else            peripheral->read(peripheral);
+////        bus->servered_ = true;
+//    }
 }

@@ -31,4 +31,8 @@ struct ines_header
 
 } extern header;
 
+void mapper_read_cpu_side();
+void mapper_write_cpu_side();
+
+
 #endif /* SRC_MAPPER_H_ */

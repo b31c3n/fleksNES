@@ -93,14 +93,17 @@ void tick()
 {
 //    puts("cpu");
     // Peripheral reads on buses
-    for(int i = 0; i < cpu_bus.nr_listeners_; ++i)
-    {
-        bus_listen(cpu_bus.listeners_[i], &cpu_bus);
-    }
+//    for(int i = 0; i < cpu_bus.nr_listeners_; ++i)
+//    {
+//        bus_listen(cpu_bus.listeners_[i], &cpu_bus);
+//    }
     ++cpu.nr_ticks_;
 
     ppu_run(), ppu_run(), ppu_run();
-    //nanosleep(&nanosecs, NULL);
+
+    //while((double) ((end_t = clock()) - start_t) < 2);
+
+    //start_t = clock();
 }
 
 void cpu_run()

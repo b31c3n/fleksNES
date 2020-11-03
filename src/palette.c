@@ -21,20 +21,3 @@ void palette_read(struct peripheral *this)
     this->bus_->data_ = this->memory_[address];
 }
 
-static uint8_t
-	palette_mem[0x20];
-
-struct peripheral
-	ppu_peripheral_palette =
-    {
-            .read           = palette_read,
-            .write          = palette_write,
-            .update         = palette_update,
-            .address_max_   = 0x3FFF,
-            .address_min_   = 0x3F00,
-            .mirror_mask_   = 0x3F1F,
-            .memory_        = &palette_mem,
-            .bus_           = &ppu_bus,
-            .irq_line_      = 0,
-            .nmi_line_      = 0
-    };

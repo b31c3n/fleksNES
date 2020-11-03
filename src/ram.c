@@ -7,17 +7,33 @@
 
 #include "peripheral.h"
 #include "bus.h"
+#include "ram.h"
 
-static uint8_t
+uint8_t
     ram[0x7FF];
 
+
+void ram_write()
+{
+    struct peripheral
+        *this = &cpu_peripheral_ram;
+    uint16_t
+        address = this->bus_->address_ & this->mirror_mask_ - this->address_min_;
+    this->memory_[address] = this->bus_->data_;
+}
+
+void ram_read()
+{
+    struct peripheral
+        *this = &cpu_peripheral_ram;
+    uint16_t
+        address = this->bus_->address_ & this->mirror_mask_ - this->address_min_;
+    this->bus_->data_ = this->memory_[address];
+}
 
 struct peripheral
     cpu_peripheral_ram =
     {
-            .read           = generic_read,
-            .write          = generic_write,
-            .update         = generic_update,
             .address_max_   = 0x1FFF,
             .address_min_   = 0x0,
             .mirror_mask_   = 0x07FF,

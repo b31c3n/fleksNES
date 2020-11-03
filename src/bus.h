@@ -15,15 +15,19 @@
 struct bus
 {
     uint8_t
-        data_,
-        nr_listeners_;
+        data_;
+//        nr_listeners_;
     uint16_t
         address_;
-    bool
-        write_,
-        servered_;
-    struct peripheral
-        *listeners_[10];
+    void
+        (*write[8]) (),
+        (*read[8]) ();
+
+//    bool
+//        write_,
+//        servered_;
+//    struct peripheral
+//        *listeners_[10];
 };
 extern struct bus
      cpu_bus;

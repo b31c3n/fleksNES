@@ -75,8 +75,8 @@ static void load_tile()
             uint16_t
                 address = 0x2000 | (ppu.vram_addr_ & 0x0FFF);
             bus_read(&ppu_bus, address);
-            for(int i = 0; i < ppu_bus.nr_listeners_; ++i)
-                bus_listen(ppu_bus.listeners_[i], &ppu_bus);
+//            for(int i = 0; i < ppu_bus.nr_listeners_; ++i)
+//                bus_listen(ppu_bus.listeners_[i], &ppu_bus);
             ppu.shiftreg_tile_id_ = ppu_bus.data_;
             break;
         }
@@ -89,8 +89,8 @@ static void load_tile()
                     ((ppu.vram_addr_ >> 4) & 0x38) |
                     ((ppu.vram_addr_ >> 2) & 0x07);
             bus_read(&ppu_bus, address);
-            for(int i = 0; i < ppu_bus.nr_listeners_; ++i)
-                bus_listen(ppu_bus.listeners_[i], &ppu_bus);
+//            for(int i = 0; i < ppu_bus.nr_listeners_; ++i)
+//                bus_listen(ppu_bus.listeners_[i], &ppu_bus);
             ppu.shiftreg_attr_ = ppu_bus.data_;
             break;
         }
@@ -121,10 +121,10 @@ void ppu_run(void)
     /*
      * Bus stuff
      */
-    for(int i = 0; i < ppu_bus.nr_listeners_; ++i)
-    {
-        bus_listen(ppu_bus.listeners_[i], &ppu_bus);
-    }
+//    for(int i = 0; i < ppu_bus.nr_listeners_; ++i)
+//    {
+//        bus_listen(ppu_bus.listeners_[i], &ppu_bus);
+//    }
 
     /*
      * Pre-render scanline (-1 or 261)
@@ -204,9 +204,10 @@ void ppu_run(void)
 }
 
 
-static void ppu_update(struct peripheral *this) {}
-static void ppu_write(struct peripheral *this)
+void ppu_write()
 {
+    struct peripheral
+        *this = &cpu_peripheral_ppu;
     uint16_t
         address = this->bus_->address_ & this->mirror_mask_ - this->address_min_;
     uint8_t
@@ -278,8 +279,10 @@ static void ppu_write(struct peripheral *this)
     }
 }
 
-static void ppu_read(struct peripheral *this)
+void ppu_read()
 {
+    struct peripheral
+        *this = &cpu_peripheral_ppu;
     uint16_t
         address = this->bus_->address_ & this->mirror_mask_ - this->address_min_;
     uint8_t
@@ -328,7 +331,4 @@ struct peripheral cpu_peripheral_ppu =
         .address_max_ = 0x3FFF,
         .mirror_mask_ = 0x2007,
         .memory_ = &ppu.regs_,
-        .update = ppu_update,
-        .read = ppu_read,
-        .write = ppu_write
 };

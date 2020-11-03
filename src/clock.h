@@ -15,6 +15,10 @@
 extern struct timespec
     nanosecs;
 
+extern clock_t
+    start_t,
+    end_t;
+
 struct clock_struct
 {
     sem_t

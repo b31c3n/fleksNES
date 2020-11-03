@@ -98,6 +98,8 @@ struct ppu_2C0X
 
 } extern ppu;
 
+void ppu_read();
+void ppu_write();
 void ppu_run(void);
 
 #endif /* SRC_PPU_H_ */

@@ -254,7 +254,7 @@ static struct bus
 void tui_cpubus_update()
 {
     wmove(tui_cpubus->window_, 0, 0);
-    wprintw(tui_cpubus->window_, "CpubusWr: %i", per_cpubus->write_);
+    //wprintw(tui_cpubus->window_, "CpubusWr: %i", per_cpubus->write_);
     wmove(tui_cpubus->window_, 0, 15);
     wprintw(tui_cpubus->window_, "DATA: %02x", per_cpubus->data_);
     wmove(tui_cpubus->window_, 0, 30);

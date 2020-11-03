@@ -35,17 +35,18 @@ int main(int argc, char **argv)
     signal(SIGINT, sigint);
     signal(SIGSEGV, sigsegv);
 
-    #pragma omp parallel
+    #pragma omp parallel sections
     {
-        #pragma omp single nowait
+        #pragma omp section
         {
+            start_t = clock();
             log_clear();
             clock_init();
             mapper_init(argv[1]);
             cpu_run();
             mapper_destroy();
         }
-//        #pragma omp single nowait
+//        #pragma omp section
 //        {
 //            tui_init();
 //            while(!shutdown)
@@ -55,7 +56,7 @@ int main(int argc, char **argv)
 //            }
 //            //tui_destroy();
 //        }
-        #pragma omp single nowait
+        #pragma omp section
         {
             display_init();
             while(!shutdown)

@@ -11,4 +11,8 @@
 extern uint8_t
     controller_buffer;
 
+void apu_write();
+void apu_read();
+
+
 #endif /* SRC_APU_H_ */

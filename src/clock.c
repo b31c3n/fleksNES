@@ -7,8 +7,12 @@
 
 #include "clock.h"
 
+clock_t
+    start_t,
+    end_t;
+
 struct timespec
-    nanosecs = { .tv_nsec = 11, .tv_sec = 0 };
+    nanosecs = { .tv_nsec = 1 , .tv_sec = 0 };
 
 struct clock_struct
     nes_clock;
