@@ -63,7 +63,7 @@ int main(int argc, char **argv)
             {
                 display_draw();
                 capture_events();
-                //nanosleep(&nanosecs, NULL);
+                //clock_nanosleep(&nanosecs, NULL);
             }
             display_destroy();
         }
