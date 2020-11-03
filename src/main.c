@@ -56,17 +56,17 @@ int main(int argc, char **argv)
 //            }
 //            //tui_destroy();
 //        }
-        #pragma omp section
-        {
-            display_init();
-            while(!shutdown)
-            {
-                display_draw();
-                capture_events();
-                //clock_nanosleep(&nanosecs, NULL);
-            }
-            display_destroy();
-        }
+//        #pragma omp section
+//        {
+//            display_init();
+//            while(!shutdown)
+//            {
+//                display_draw();
+//                capture_events();
+//                //clock_nanosleep(&nanosecs, NULL);
+//            }
+//            display_destroy();
+//        }
     }
     return 0;
 }
