@@ -5,6 +5,8 @@
  *      Author: David Jonsson
  */
 
+#include <sys/time.h>
+
 #include "ppu.h"
 #include "clock.h"
 #include "helper_funcs.h"
@@ -75,8 +77,6 @@ static void load_tile()
             uint16_t
                 address = 0x2000 | (ppu.vram_addr_ & 0x0FFF);
             bus_read(&ppu_bus, address);
-//            for(int i = 0; i < ppu_bus.nr_listeners_; ++i)
-//                bus_listen(ppu_bus.listeners_[i], &ppu_bus);
             ppu.shiftreg_tile_id_ = ppu_bus.data_;
             break;
         }
@@ -89,8 +89,6 @@ static void load_tile()
                     ((ppu.vram_addr_ >> 4) & 0x38) |
                     ((ppu.vram_addr_ >> 2) & 0x07);
             bus_read(&ppu_bus, address);
-//            for(int i = 0; i < ppu_bus.nr_listeners_; ++i)
-//                bus_listen(ppu_bus.listeners_[i], &ppu_bus);
             ppu.shiftreg_attr_ = ppu_bus.data_;
             break;
         }
@@ -109,6 +107,13 @@ static void load_tile()
     }
 }
 
+struct timeval
+    start,
+    end;
+
+uint16_t
+    frames = 0;
+
 void ppu_run(void)
 {
     ppu.cycle_ 		++,
@@ -116,15 +121,6 @@ void ppu_run(void)
     ppu.scanline_ 	+= !ppu.cycle_ ? 1 : 0,
     ppu.scanline_ 	%= 262,
     ppu.frame_      += !ppu.scanline_ && !ppu.cycle_ ? 1 : 0;
-
-
-    /*
-     * Bus stuff
-     */
-//    for(int i = 0; i < ppu_bus.nr_listeners_; ++i)
-//    {
-//        bus_listen(ppu_bus.listeners_[i], &ppu_bus);
-//    }
 
     /*
      * Pre-render scanline (-1 or 261)
@@ -141,6 +137,15 @@ void ppu_run(void)
             {
                 cpu.nmi_ = 1;
             }
+
+//            gettimeofday(&end, NULL);
+//            if(end.tv_sec - start.tv_sec > 1)
+//            {
+//                printf("%i fps\n", frames);
+//                frames = 0;
+//                gettimeofday(&start, NULL);
+//            }
+//            else ++frames;
         }
 
         /*
@@ -313,15 +318,14 @@ void ppu_read()
     }
 }
 
-
-
 struct ppu_2C0X ppu =
 {
-        .read_flags_    = 0b10010100,
-        .write_flags_   = 0b11111011,
-        .latch_         = false,
-        .scanline_      = 0,
-        .cycle_         = 0,
+        .read_flags_        = 0b10010100,
+        .write_flags_       = 0b11111011,
+        .latch_             = false,
+        .scanline_          = 0,
+        .cycle_             = 0,
+        .regs_[PPU_CTRL]    = 0xFF,
 };
 
 struct peripheral cpu_peripheral_ppu =

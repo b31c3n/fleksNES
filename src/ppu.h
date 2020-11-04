@@ -98,6 +98,10 @@ struct ppu_2C0X
 
 } extern ppu;
 
+extern struct timeval
+    start,
+    end;
+
 void ppu_read();
 void ppu_write();
 void ppu_run(void);

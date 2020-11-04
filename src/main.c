@@ -13,6 +13,7 @@
 #include "display.h"
 #include "instruction_tbl.h"
 #include "clock.h"
+#include "ppu.h"
 
 
 void sigint(int signal)
@@ -34,12 +35,11 @@ int main(int argc, char **argv)
 {
     signal(SIGINT, sigint);
     signal(SIGSEGV, sigsegv);
-
     #pragma omp parallel sections
     {
         #pragma omp section
         {
-            start_t = clock();
+            gettimeofday(&start, NULL);
             log_clear();
             clock_init();
             mapper_init(argv[1]);
@@ -56,17 +56,17 @@ int main(int argc, char **argv)
 //            }
 //            //tui_destroy();
 //        }
-//        #pragma omp section
-//        {
-//            display_init();
-//            while(!shutdown)
-//            {
-//                display_draw();
-//                capture_events();
-//                //clock_nanosleep(&nanosecs, NULL);
-//            }
-//            display_destroy();
-//        }
+        #pragma omp section
+        {
+            display_init();
+            while(!shutdown)
+            {
+                display_draw();
+                capture_events();
+                //clock_nanosleep(&nanosecs, NULL);
+            }
+            display_destroy();
+        }
     }
     return 0;
 }

@@ -41,7 +41,6 @@ struct c6502 cpu =
             .lsb_ = &cpu.program_counter_.word_,
             .msb_ = ((uint8_t *) (&cpu.program_counter_.word_)) + 1
         },
-
 };
 
 void cpu_fetch_instruction()

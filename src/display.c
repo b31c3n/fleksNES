@@ -9,6 +9,8 @@
 #include "colors.h"
 #include "peripheral.h"
 #include "apu.h"
+#include "ppu.h"
+
 struct display display;
 
 void display_init()
@@ -59,8 +61,9 @@ static void draw_background(const SDL_PixelFormat *format, Uint32 *pixels)
     )
     {
         uint16_t
-            pattern_idx = ((uint16_t) ppu_peripheral_nametable.memory_[tile_idx]) * 0x10,
-            attribute = (tile_idx / 4) % (8 * 1) + tile_idx / (32 * 4) * 8 + 0x3C0,
+            pattern_idx = ((uint16_t) ppu_peripheral_nametable.memory_[tile_idx]) * 0x10
+                          + 0x1000 * ((bool) (ppu.regs_[PPU_CTRL] & PPU_CTRL_BACKGROUND_ADDR)),
+            attribute = (tile_idx / 4) % (8 * 1) + tile_idx / (32 * 4) * 16 + 0x3C0,
             palette_idx = ppu_peripheral_nametable.memory_[attribute];
 
         for(size_t pixel_y = (tile_idx / 32) * 8,
