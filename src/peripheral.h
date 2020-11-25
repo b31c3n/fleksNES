@@ -35,19 +35,5 @@ struct peripheral
         (*write)(struct peripheral *this);
 };
 
-//void generic_update(struct peripheral *this);
-//void generic_write(struct peripheral *this);
-//void generic_read(struct peripheral *this);
-
-extern struct peripheral
-    cpu_peripheral_ram,
-    cpu_peripheral_apu,
-    cpu_peripheral_ppu,
-    cpu_peripheral_dma,
-    cpu_peripheral_prgrom,
-    cpu_peripheral_prgram,
-    ppu_peripheral_chrrom,
-    ppu_peripheral_palette,
-    ppu_peripheral_nametable;
 
 #endif /* SRC_PERIPHERAL_H_ */

@@ -8,7 +8,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include "tui.h"
-#include "peripheral.h"
+#include "peripherals.h"
 #include "cpu.h"
 #include "bus.h"
 
@@ -301,7 +301,7 @@ struct tui_comp
         .h_ = 18
     },
     {
-        .component_ = &ppu_peripheral_nametable,
+        .component_ = &ppu_peripheral_palette,
 
         .update = tui_mem2_update,
         .init = tui_mem2_init,

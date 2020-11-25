@@ -33,6 +33,7 @@ struct ines_header
 
 void mapper_read_cpu_side();
 void mapper_write_cpu_side();
-
+void mapper_read_ppu_side();
+void mapper_write_ppu_side();
 
 #endif /* SRC_MAPPER_H_ */

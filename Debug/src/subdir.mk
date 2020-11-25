@@ -20,8 +20,8 @@ C_SRCS += \
 ../src/main.c \
 ../src/mapper.c \
 ../src/nametable.c \
-../src/peripheral.c \
 ../src/ppu.c \
+../src/ppu_comm.c \
 ../src/ram.c \
 ../src/tui.c 
 
@@ -42,8 +42,8 @@ OBJS += \
 ./src/main.o \
 ./src/mapper.o \
 ./src/nametable.o \
-./src/peripheral.o \
 ./src/ppu.o \
+./src/ppu_comm.o \
 ./src/ram.o \
 ./src/tui.o 
 
@@ -64,8 +64,8 @@ C_DEPS += \
 ./src/main.d \
 ./src/mapper.d \
 ./src/nametable.d \
-./src/peripheral.d \
 ./src/ppu.d \
+./src/ppu_comm.d \
 ./src/ram.d \
 ./src/tui.d 
 
@@ -74,7 +74,7 @@ C_DEPS += \
 src/%.o: ../src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C Compiler'
-	gcc -std=c11 -IGl -O0 -g -w -c -fmessage-length=0 -fopenmp -pthread -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	gcc -std=c11 -IGl -O3 -g -w -c -fmessage-length=0 -fopenmp -pthread -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

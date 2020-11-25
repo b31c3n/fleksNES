@@ -5,7 +5,7 @@
  *      Author: David Jonsson
  */
 
-#include "peripheral.h"
+#include "peripherals.h"
 #include "apu.h"
 
 uint8_t

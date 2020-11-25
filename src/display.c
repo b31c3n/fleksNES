@@ -7,7 +7,7 @@
 
 #include "display.h"
 #include "colors.h"
-#include "peripheral.h"
+#include "peripherals.h"
 #include "apu.h"
 #include "ppu.h"
 
@@ -238,8 +238,21 @@ bool display_draw()
 
     //pixelcount = pitch / 4 * SCREEN_H;
 
-    draw_background(format, pixels);
+//    draw_background(format, pixels);
 
+    for(size_t i = 0; i < 256 * 240; ++i)
+    {
+        uint8_t
+            pal_idx = ppu.pixels_[i];
+        uint32_t
+             color = SDL_MapRGB(
+                         format,
+                         COLORS[pal_idx].r,
+                         COLORS[pal_idx].g,
+                         COLORS[pal_idx].b);
+
+        pixels[i] = color;
+    }
 
     SDL_FreeFormat(format);
     SDL_UnlockTexture(display.texture_);

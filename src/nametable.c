@@ -5,7 +5,7 @@
  *      Author: archie
  */
 
-#include "peripheral.h"
+#include "peripherals.h"
 #include "mapper.h"
 #include "nametable.h"
 
@@ -49,8 +49,11 @@ void ntable_read()
         else
             ntable_id = 0;
 
-        this->bus_->data_ =
-                nametable_mem[ntable_id][address & this->mirror_mask_ - this->address_min_];
+        address = (address & this->mirror_mask_) - this->address_min_;
+        uint8_t
+            data = nametable_mem[ntable_id][address];
+        this->bus_->data_ = data;
+
     }
 }
 
@@ -91,8 +94,10 @@ void ntable_write()
         else
             ntable_id = 0;
 
-        nametable_mem[ntable_id][address & this->mirror_mask_ - this->address_min_] =
-                this->bus_->data_;
+        address = (address & this->mirror_mask_) - this->address_min_;
+        uint8_t
+            data = this->bus_->data_;
+        nametable_mem[ntable_id][address] = data;
     }
 }
 

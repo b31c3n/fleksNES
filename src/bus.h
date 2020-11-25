@@ -10,29 +10,23 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+
 #include "peripheral.h"
+#include "ppu_constants.h"
 
 struct bus
 {
     uint8_t
         data_;
-//        nr_listeners_;
     uint16_t
         address_;
     void
         (*write[8]) (),
         (*read[8]) ();
-
-//    bool
-//        write_,
-//        servered_;
-//    struct peripheral
-//        *listeners_[10];
 };
-extern struct bus
-     cpu_bus;
 
 extern struct bus
+     cpu_bus,
      ppu_bus;
 
 /**
@@ -49,11 +43,5 @@ void bus_write(
         struct bus *bus,
         uint16_t address);
 
-/**
- * @brief
- */
-void bus_listen(
-        struct peripheral *peripheral,
-        struct bus *bus);
 
 #endif /* SRC_BUS_H_ */

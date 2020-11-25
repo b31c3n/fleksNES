@@ -5,7 +5,7 @@
  *      Author: David Jonsson
  */
 
-#include "peripheral.h"
+#include "peripherals.h"
 #include "bus.h"
 #include "ram.h"
 
