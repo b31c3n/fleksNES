@@ -48,7 +48,7 @@ void tui_destroy()
 }
 
 uint16_t
-    tui_mem_offsets[] = {0x2000, 0x3f00};
+    tui_mem_offsets[] = {0x23C0, 0x3f00};
 void tui_get_command()
 {
     char
@@ -141,7 +141,7 @@ void tui_mem1_update()
         i = tui_mem_offsets[0],
         stop = i + 0xF0;
 
-    stop &= per_mem1->mirror_mask_;
+    //stop &= per_mem1->mirror_mask_;
 
     for(;i <= stop; i += 0x10)
     {
@@ -158,7 +158,8 @@ void tui_mem1_init(void *this)
 {
     tui_mem1 = this;
     per_mem1 = tui_mem1->component_;
-    tui_mem_offsets[0] = per_mem1->address_min_;
+//    tui_mem_offsets[0] = per_mem1->address_min_;
+    tui_mem_offsets[0] = 0x23C0;
 }
 
 /**
@@ -291,7 +292,7 @@ struct tui_comp
     tui_components[TUI_NR_COMPS] =
 {
     {
-        .component_ = &ppu_peripheral_chrrom,
+        .component_ = &ppu_peripheral_nametable,
 
         .update = tui_mem1_update,
         .init = tui_mem1_init,

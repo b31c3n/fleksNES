@@ -20,6 +20,8 @@ void ntable_read()
             *this = &ppu_peripheral_palette;
         uint16_t
             address = this->bus_->address_ & this->mirror_mask_ - this->address_min_;
+        address &= 0x1F;
+        address -=  0x0010 * !((bool)(address & 0b00011)) * ((bool) (address & 0b10000));
         this->bus_->data_ = this->memory_[address];
     }
     else
@@ -65,6 +67,8 @@ void ntable_write()
             *this = &ppu_peripheral_palette;
         uint16_t
             address = this->bus_->address_ & this->mirror_mask_ - this->address_min_;
+        address &= 0x1F;
+        address -=  0x0010 * !((bool)(address & 0b00011)) * ((bool) (address & 0b10000));
         this->memory_[address] = this->bus_->data_;
     }
     else

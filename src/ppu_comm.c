@@ -88,7 +88,7 @@ static void read_data()
     bus_read(&ppu_bus, ppu.vram_addr_ & 0x3FFF);
     ppu.ppu_data_buffer_ = ppu_bus.data_;
 
-    if(ppu.vram_addr_ <= 0x3EFF)
+    if(ppu.vram_addr_ >= 0x3EFF)
     {
         ppu_comm.ppu_->bus_->data_ = ppu.ppu_data_buffer_;
     }

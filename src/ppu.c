@@ -61,7 +61,7 @@ static void reset_x()
 
     uint16_t
         mask = VRAM_COARSE_X | 0x0400;
-    ppu.vram_addr_ &= ~mask;
+    ppu.vram_addr_ &= ~(mask | 0x8000);
     ppu.vram_addr_ |= ppu.tram_addr_ & mask;
 }
 
@@ -71,7 +71,7 @@ static void reset_y()
 
     uint16_t
         mask = VRAM_COARSE_Y | VRAM_FINE_Y | 0x0800;
-    ppu.vram_addr_ &= ~mask;
+    ppu.vram_addr_ &= ~(mask | 0x8000);
     ppu.vram_addr_ |= ppu.tram_addr_ & mask;
 }
 
@@ -112,9 +112,10 @@ static void case2()
                     ((ppu.vram_addr_ >> 2) & 0b000111);
     bus_read(&ppu_bus, address);
     ppu.next_attr_ = ppu_bus.data_;
-    ppu.next_attr_ >>= 4 * (bool)(ppu.vram_addr_ & 0b1000000);
-    ppu.next_attr_ >>= 2 * (bool)(ppu.vram_addr_ & 0b10);
+    ppu.next_attr_ >>= 4 * ((bool)(ppu.vram_addr_ & 0b1000000));
+    ppu.next_attr_ >>= 2 * ((bool)(ppu.vram_addr_ & 0b10));
     ppu.next_attr_ &= 0x03;
+
 }
 
 static void case4()
@@ -125,7 +126,7 @@ static void case4()
      */
     uint16_t
         address =
-            0x1000 * ((bool) (ppu.regs_[PPU_CTRL] & PPU_CTRL_BACKGROUND_ADDR)) +
+            (0b1 << 12) * ((bool) (ppu.regs_[PPU_CTRL] & PPU_CTRL_BACKGROUND_ADDR)) +
             (((uint16_t) ppu.next_tile_id_) << 4) +
             ((ppu.vram_addr_ & VRAM_FINE_Y) >> 12);
 
@@ -141,9 +142,9 @@ static void case6()
      */
     uint16_t
         address =
-            0x1000 * ((bool) (ppu.regs_[PPU_CTRL] & PPU_CTRL_BACKGROUND_ADDR)) +
+            (0b1 << 12) * ((bool) (ppu.regs_[PPU_CTRL] & PPU_CTRL_BACKGROUND_ADDR)) +
             (((uint16_t) ppu.next_tile_id_) << 4) +
-            ((ppu.vram_addr_ & VRAM_FINE_Y) >> 12 + 8);
+            (((ppu.vram_addr_ & VRAM_FINE_Y) >> 12) + 8);
 
     bus_read(&ppu_bus, address);
     ppu.next_pattern_hi_ = ppu_bus.data_;
@@ -174,7 +175,6 @@ static void
 
 static void load_tile()
 {
-    //return;
     if(ppu.regs_[PPU_MASK] & (PPU_MASK_SHOW_BACKGROUNND))
     {
         ppu.shift_attr_lo_ <<= 1;
@@ -226,7 +226,7 @@ void ppu_run(void)
         /*
          * Check if end of scanline and on odd frame
          */
-        else if(ppu.cycle_ == 339 && !(ppu.frame_ % 2))
+        if(ppu.cycle_ == 339 && !(ppu.frame_ % 2))
         {
             ppu.cycle_ = 0;
             ppu.scanline_ = 0;
@@ -235,8 +235,8 @@ void ppu_run(void)
         /**
          * Load tiles
          */
-        else if((ppu.cycle_ >= 1 && ppu.cycle_ <= 256) ||
-                (ppu.cycle_ >= 321 && ppu.cycle_ <= 336))
+        if((ppu.cycle_ >= 1 && ppu.cycle_ <= 256) ||
+                (ppu.cycle_ >= 321 && ppu.cycle_ <= 340))
         {
             load_tile();
             if(ppu.cycle_ == 256) inc_y();
@@ -246,9 +246,12 @@ void ppu_run(void)
          * Reset x/y-scrolls
          */
         else if(ppu.cycle_ == 257)
+        {
             reset_x();
+        }
         else if(ppu.cycle_ >= 280 && ppu.cycle_ <= 304)
             reset_y();
+
 
     }
 
@@ -265,44 +268,49 @@ void ppu_run(void)
             load_tile();
             if(ppu.cycle_ == 256) inc_y();
 
-            uint8_t bg_pixel = 0x00;   // The 2-bit pixel to be rendered
-            uint8_t bg_palette = 0x00;
-            uint16_t bit_mux = 0x8000 >> ppu.x_finescroll_;
+            if(ppu.regs_[PPU_MASK] & (PPU_MASK_SHOW_BACKGROUNND))
+            {
+                uint8_t bg_pixel = 0x00;   // The 2-bit pixel to be rendered
+                uint8_t bg_palette = 0x00;
+                uint16_t bit_mux = 0x8000 >> ppu.x_finescroll_;
 
-            // Select Plane pixels by extracting from the shifter
-                    // at the required location.
-            uint8_t p0_pixel = (ppu.shift_pattern_lo_ & bit_mux) > 0;
-            uint8_t p1_pixel = (ppu.shift_pattern_hi_ & bit_mux) > 0;
+                // Select Plane pixels by extracting from the shifter
+                        // at the required location.
+                uint8_t p0_pixel = (ppu.shift_pattern_lo_ & bit_mux) > 0;
+                uint8_t p1_pixel = (ppu.shift_pattern_hi_ & bit_mux) > 0;
 
-            // Combine to form pixel index
-            bg_pixel = (p1_pixel << 1) | p0_pixel;
+                // Combine to form pixel index
+                bg_pixel = (p1_pixel << 1) | (p0_pixel << 0 );
 
-            // Get palette
-            uint8_t bg_pal0 = (ppu.shift_attr_lo_ & bit_mux) > 0;
-            uint8_t bg_pal1 = (ppu.shift_attr_hi_ & bit_mux) > 0;
-            bg_palette = (bg_pal1 << 1) | bg_pal0;
-            //bg_palette = 0;
+                // Get palette
+                uint8_t bg_pal0 = (ppu.shift_attr_lo_ & bit_mux) > 0;
+                uint8_t bg_pal1 = (ppu.shift_attr_hi_ & bit_mux) > 0;
+                bg_palette = (bg_pal1 << 1) | bg_pal0;
 
-            uint8_t
-                color_idx = bg_pixel | (bg_palette << 2);
-//                (bg_palette << 4) | 0b1100 ;
-            /*
-             * Redirect to backdrop color if 2 LSBits of color idx is 0
-             */
-            color_idx = color_idx * ((color_idx & 0b1) | ((color_idx & 0b10) >> 1));
+                uint8_t
+                    color_idx = (bg_pixel << 0) | (bg_palette << 2);
+                /*
+                 * Redirect to backdrop color if 2 LSBits of color idx is 0
+                 */
+//                color_idx -= (color_idx + 1)  / 4;
+                color_idx = color_idx * ((color_idx & 0b1) | ((color_idx & 0b10) >> 1));
 
-            uint8_t
-                clr = ppu_peripheral_palette.memory_[color_idx  & 0x3F];
-            uint16_t
-                pixel_idx = ppu.cycle_ - 1 + (uint16_t) ppu.scanline_ * 256;
+                bus_read(&ppu_bus, (color_idx + 0x3F00));
+                uint8_t
+                    clr = ppu_bus.data_;
+//                uint8_t
+//                    clr = ppu_peripheral_palette.memory_[color_idx  & 0x3F];
+                uint16_t
+                    pixel_idx = ppu.cycle_ - 1 + (uint16_t) ppu.scanline_ * 256;
 
-            ppu.pixels_[pixel_idx] = clr;
+                ppu.pixels_[pixel_idx] = clr;
+            }
+
         }
 
-        else if(ppu.cycle_ >= 321 && ppu.cycle_ <= 336)
+        else if(ppu.cycle_ >= 321 && ppu.cycle_ <= 340)
         {
             load_tile();
-            if(ppu.cycle_ == 256) inc_y();
         }
 
         /*
@@ -324,6 +332,8 @@ void ppu_run(void)
             cpu.nmi_ = 1;
         }
     }
+
+
 }
 
 void ppu_write()

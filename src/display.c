@@ -77,6 +77,10 @@ static void draw_background(const SDL_PixelFormat *format, Uint32 *pixels)
                 pattern_msb = pattern_idx + cnt_y + 8,
                 low_order_b = (uint16_t) ppu_peripheral_chrrom.memory_[pattern_lsb],
                 high_order_b = ((uint16_t) ppu_peripheral_chrrom.memory_[pattern_msb]) << 1;
+            if(palette_idx)
+            {
+                puts("test");
+            }
 
             for(size_t cnt_x = 0,
                 pixel_x = (tile_idx % 32) * 8 + 7;
@@ -90,7 +94,11 @@ static void draw_background(const SDL_PixelFormat *format, Uint32 *pixels)
                     pal_val = (high_order_b & 0b10) + (low_order_b & 0b01);
                 uint8_t
                     color_idx = pal_val | (((palette_idx >> (pal_shift * 2)) & 0b11) << 2);
-
+                if
+                (!((pal_val & 0b01) && (pal_val & 0b10)) && pal_val)
+                {
+                    puts("test");
+                }
                 /*
                  * Redirect to backdrop color if 2 LSBits of color idx is 0
                  */
@@ -244,6 +252,7 @@ bool display_draw()
     {
         uint8_t
             pal_idx = ppu.pixels_[i];
+
         uint32_t
              color = SDL_MapRGB(
                          format,
