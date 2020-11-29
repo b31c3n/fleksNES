@@ -22,6 +22,15 @@
 #define PPU_DATA        7
 
 /**
+ * OAM-offsets
+ */
+
+#define OAM_Y           0
+#define OAM_ID          1
+#define OAM_ATTR        2
+#define OAM_X           3
+
+/**
  * CTRL-bits
  */
 #define PPU_CTRL_NAMETABLE_ADDR0    0b00000001

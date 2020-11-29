@@ -10,6 +10,8 @@
 #include "cpu.h"
 #include "instruction_tbl.h"
 #include "clock.h"
+#include "ppu.h"
+#include "bus.h"
 
 bool shutdown = 0;
 
@@ -99,6 +101,37 @@ void cpu_run()
     while(!shutdown)
     {
         cpu.status_ |= CPU_STATUS_NOT_USED;
+
+        if(cpu.suspend_etc_ & CPU_DMA)
+        {
+            uint16_t
+                msb = cpu_bus.data_ << 8;
+
+            /**
+             * Suspend cpu, copy data to oam
+             */
+            cpu.suspend_etc_ |= CPU_SUSPEND;
+
+            /*
+             * Extra tick stuff?
+             */
+            if(cpu.suspend_etc_ & CPU_ODD_CYCLE)
+            {
+                cpu.suspend_etc_ ^=  CPU_ODD_CYCLE;
+            }
+            for(int lsb = 0; lsb <= 0xFF; ++lsb)
+            {
+                bus_read(&cpu_bus, msb + lsb);
+                ppu.oam_prm_[lsb] = cpu_bus.data_;
+
+                ppu_run(), ppu_run(), ppu_run();
+                cpu.suspend_etc_ ^=  CPU_ODD_CYCLE;
+            }
+
+            cpu.suspend_etc_ ^= CPU_DMA;
+            cpu.suspend_etc_ ^= CPU_SUSPEND;
+        }
+
         if(!(cpu.suspend_etc_ & CPU_SUSPEND))
         {
 
@@ -110,6 +143,7 @@ void cpu_run()
             {
                 cpu.opcode_ = 0x00;
             }
+
             else
             {
                 ++cpu.nr_instructions;
@@ -133,9 +167,10 @@ void cpu_run()
              */
 
             cpu_execute_instruction();
-
         }
-    }}
+        cpu.suspend_etc_ ^=  CPU_ODD_CYCLE;
+    }
+}
 
 
 omp_lock_t writelock;

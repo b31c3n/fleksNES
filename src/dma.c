@@ -26,6 +26,8 @@ static void dma_write(struct peripheral *this)
     {
         bus_read(&cpu_bus, msb + lsb);
         ppu.oam_prm_[lsb] = cpu_bus.data_;
+
+        ppu_run(), ppu_run(), ppu_run();
     }
     cpu.suspend_etc_ &= ~CPU_SUSPEND;
 }

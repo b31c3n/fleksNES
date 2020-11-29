@@ -31,6 +31,8 @@
  */
 #define CPU_RESET               0b00000001
 #define CPU_SUSPEND             0b00000010
+#define CPU_DMA                 0b00000100
+#define CPU_ODD_CYCLE           0b00001000
 
 #include <stdbool.h>
 #include <stdint.h>

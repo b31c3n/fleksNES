@@ -14,6 +14,8 @@
 #include "ppu_comm.h"
 #include "peripherals.h"
 
+//#define CLOCK true
+
 static bool rendering()
 {
     return ppu.regs_[PPU_MASK] & (PPU_MASK_SHOW_BACKGROUNND | PPU_MASK_SHOW_SPRITE);
@@ -213,14 +215,16 @@ void ppu_run(void)
         {
             ppu.regs_[PPU_STATUS] = PPU_STATUS & ~PPU_STATUS_VBLANK;
 
-            gettimeofday(&end, NULL);
-            if(end.tv_sec - start.tv_sec > 1)
-            {
-                printf("%i fps\n", frames);
-                frames = 0;
-                gettimeofday(&start, NULL);
-            }
-            else ++frames;
+            #ifdef CLOCK
+                gettimeofday(&end, NULL);
+                if(end.tv_sec - start.tv_sec > 1)
+                {
+                    printf("%i fps\n", frames);
+                    frames = 0;
+                    gettimeofday(&start, NULL);
+                }
+                else ++frames;
+            #endif
         }
 
         /*
@@ -317,8 +321,51 @@ void ppu_run(void)
          * Reset x-scroll
          */
         else if(ppu.cycle_ == 257)
+        {
             reset_x();
 
+            /*
+             * Load sprites into secondary OAM
+             */
+            memset(ppu.sprite_shifters_, 0x00, sizeof(ppu.sprite_shifters_));
+            memset(ppu.oam_sec_, 0xFFFFFFFF, sizeof(ppu.oam_sec_));
+
+            bool
+                negative,
+                in_range,
+                zero_sprite;
+            uint32_t
+                *oam_prm_p = ppu.oam_prm_,
+                *oam_sec_p  = ppu.oam_sec_;
+
+            for(;
+                oam_prm_p < ppu.oam_sec_ &&
+                oam_sec_p < ppu.oam_dummy_;
+                )
+            {
+                int16_t
+                    oam_y = *((uint8_t *) oam_prm_p),
+                    scan_y = ppu.scanline_,
+                    result = (oam_y - scan_y);
+                bool
+                    negative =  result & 1 << 15,
+                    /**
+                     * Need to fix so it takes into account height of sprite, 16 / 8
+                     */
+                    in_range =  !(result & (~0b111)) ^ (~0b111);
+
+                *ppu.oam_sec_ = *ppu.oam_prm_;
+                ++oam_prm_p;
+                oam_sec_p += negative * in_range;
+            }
+            /*
+             * Set sprite overflow,
+             * and if zero_sprite
+             */
+            ppu.regs_[PPU_STATUS] |= (!((bool)((uint64_t) oam_sec_p ^ (uint64_t) ppu.oam_dummy_))) << 5;
+            zero_sprite = !((uint64_t) oam_sec_p ^ (uint64_t) ppu.oam_sec_);
+            *oam_sec_p = 0xFFFFFFFF;
+        }
     }
 
     /*

@@ -7,6 +7,7 @@
 
 #include "peripherals.h"
 #include "apu.h"
+#include "cpu.h"
 
 uint8_t
     controller_buffer,
@@ -14,13 +15,19 @@ uint8_t
 
 void apu_write()
 {
-    struct peripheral
-        *this = &cpu_peripheral_apu;
-    uint16_t
-        address = this->bus_->address_ & this->mirror_mask_ - this->address_min_;
-//    this->memory_[address] = this->bus_->data_;
-    if(address == 0x16)
-        controller_state = controller_buffer;
+    if(cpu_bus.address_ == 0x4014)
+    {
+        cpu.suspend_etc_ |= CPU_DMA;
+    }
+    else
+    {
+        struct peripheral
+            *this = &cpu_peripheral_apu;
+        uint16_t
+            address = this->bus_->address_ & this->mirror_mask_ - this->address_min_;
+        if(address == 0x16)
+            controller_state = controller_buffer;
+    }
 }
 void apu_read()
 {

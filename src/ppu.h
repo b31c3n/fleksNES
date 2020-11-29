@@ -18,7 +18,9 @@ struct ppu_2C0X
     uint8_t
         regs_[8],
         oam_prm_[256],
-        oam_sec_[32],
+        oam_sec_[4 * 8],
+        oam_dummy_[4],// One extra dummy entry
+        sprite_shifters_[16],
         ppu_data_buffer_,
         x_finescroll_,
         next_pattern_lo_,
