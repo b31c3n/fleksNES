@@ -194,12 +194,8 @@ static void load_tile()
             bool
                 x_positive = ppu.oam_sec_[sprite_nr * 4 + OAM_X];
             ppu.oam_sec_[sprite_nr * 4 + OAM_X] -= x_positive;
-//            if(!x_positive)
-//            {
-//                puts("hit");
-//            }
-            ppu.sprite_shifters_hi_[sprite_nr] <<= 1 - (bool) x_positive;
-            ppu.sprite_shifters_hi_[sprite_nr] <<= 1 - (bool) x_positive;
+            ppu.sprite_shifters_lo_[sprite_nr] <<= 1 - x_positive;
+            ppu.sprite_shifters_hi_[sprite_nr] <<= 1 - x_positive;
         }
     }
 
@@ -331,13 +327,6 @@ void ppu_run(void)
 //                color_idx -= (color_idx + 1)  / 4;
 //                color_idx = color_idx * ((color_idx & 0b1) | ((color_idx & 0b10) >> 1));
 //
-//                bus_read(&ppu_bus, (color_idx + 0x3F00));
-//                uint8_t
-//                    clr = ppu_bus.data_;
-//                uint16_t
-//                    pixel_idx = ppu.cycle_ - 1 + (uint16_t) ppu.scanline_ * 256;
-
-//                ppu.pixels_[pixel_idx] = clr;
             }
             if(ppu.regs_[PPU_MASK] & (PPU_MASK_SHOW_SPRITE))
             {
@@ -352,7 +341,11 @@ void ppu_run(void)
                     fg_palette = ppu.oam_sec_[sprite_nr * 4 + OAM_ATTR] + 0x04;
 
                     zero_sprite_rendered = 1 - (bool) sprite_nr;
-                    if(fg_pixel) break;
+                    if(fg_pixel)
+                    {
+                        break;
+                    }
+
                 }
             }
             bg_prio = (1 - (bool) fg_pixel);
