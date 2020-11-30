@@ -14,7 +14,7 @@
 #include "ppu_comm.h"
 #include "peripherals.h"
 
-//#define CLOCK true
+#define CLOCK
 
 static bool rendering()
 {
@@ -183,6 +183,24 @@ static void load_tile()
         ppu.shift_attr_hi_ <<= 1;
         ppu.shift_pattern_lo_ <<= 1;
         ppu.shift_pattern_hi_ <<= 1;
+
+
+    }
+
+    if(ppu.regs_[PPU_MASK] & (PPU_MASK_SHOW_SPRITE))
+    {
+        for(uint8_t sprite_nr = 0; sprite_nr < 8; ++sprite_nr)
+        {
+            bool
+                x_positive = ppu.oam_sec_[sprite_nr * 4 + OAM_X];
+            ppu.oam_sec_[sprite_nr * 4 + OAM_X] -= x_positive;
+//            if(!x_positive)
+//            {
+//                puts("hit");
+//            }
+            ppu.sprite_shifters_hi_[sprite_nr] <<= 1 - (bool) x_positive;
+            ppu.sprite_shifters_hi_[sprite_nr] <<= 1 - (bool) x_positive;
+        }
     }
 
     tile_funcs[(ppu.cycle_ - 1) % 8]();
@@ -199,7 +217,7 @@ void ppu_run(void)
 {
     ppu.cycle_ 		++,
     ppu.cycle_		%= 341,
-    ppu.scanline_ 	+= !ppu.cycle_ ? 1 : 0,
+    ppu.scanline_ 	+= 1 - (bool) ppu.cycle_,
     ppu.scanline_ 	%= 262,
     ppu.frame_      += !ppu.scanline_ && !ppu.cycle_ ? 1 : 0;
 
@@ -272,10 +290,24 @@ void ppu_run(void)
             load_tile();
             if(ppu.cycle_ == 256) inc_y();
 
+            uint8_t
+                bg_pixel = 0x00,
+                fg_pixel = 0x00,
+                bg_palette = 0x00,
+                fg_palette = 0x00,
+                pixel = 0x00,
+                palette = 0x00,
+                fg_prio,
+                bg_prio,
+                color_idx;
+
+            bool
+                zero_sprite_detected = (uint64_t) ppu.oam_sec_p ^ (uint64_t) ppu.oam_sec_,
+                zero_sprite_rendered;
+
             if(ppu.regs_[PPU_MASK] & (PPU_MASK_SHOW_BACKGROUNND))
             {
-                uint8_t bg_pixel = 0x00;   // The 2-bit pixel to be rendered
-                uint8_t bg_palette = 0x00;
+
                 uint16_t bit_mux = 0x8000 >> ppu.x_finescroll_;
 
                 // Select Plane pixels by extracting from the shifter
@@ -291,25 +323,51 @@ void ppu_run(void)
                 uint8_t bg_pal1 = (ppu.shift_attr_hi_ & bit_mux) > 0;
                 bg_palette = (bg_pal1 << 1) | bg_pal0;
 
-                uint8_t
-                    color_idx = (bg_pixel << 0) | (bg_palette << 2);
+//                uint8_t
+//                    color_idx = (bg_pixel << 0) | (bg_palette << 2);
                 /*
                  * Redirect to backdrop color if 2 LSBits of color idx is 0
                  */
 //                color_idx -= (color_idx + 1)  / 4;
-                color_idx = color_idx * ((color_idx & 0b1) | ((color_idx & 0b10) >> 1));
-
-                bus_read(&ppu_bus, (color_idx + 0x3F00));
-                uint8_t
-                    clr = ppu_bus.data_;
+//                color_idx = color_idx * ((color_idx & 0b1) | ((color_idx & 0b10) >> 1));
+//
+//                bus_read(&ppu_bus, (color_idx + 0x3F00));
 //                uint8_t
-//                    clr = ppu_peripheral_palette.memory_[color_idx  & 0x3F];
-                uint16_t
-                    pixel_idx = ppu.cycle_ - 1 + (uint16_t) ppu.scanline_ * 256;
+//                    clr = ppu_bus.data_;
+//                uint16_t
+//                    pixel_idx = ppu.cycle_ - 1 + (uint16_t) ppu.scanline_ * 256;
 
-                ppu.pixels_[pixel_idx] = clr;
+//                ppu.pixels_[pixel_idx] = clr;
             }
+            if(ppu.regs_[PPU_MASK] & (PPU_MASK_SHOW_SPRITE))
+            {
+                for(uint8_t sprite_nr = 0; sprite_nr < 8; ++sprite_nr)
+                {
+                    bool
+                        x_zero = 1 - (bool) ppu.oam_sec_[sprite_nr * 4 + OAM_X],
+                        pixel_lo = ppu.sprite_shifters_lo_[sprite_nr] & 0x80,
+                        pixel_hi = ppu.sprite_shifters_hi_[sprite_nr] & 0x80;
+                    fg_pixel = pixel_lo | (pixel_hi << 1);
+                    fg_pixel *= x_zero;
+                    fg_palette = ppu.oam_sec_[sprite_nr * 4 + OAM_ATTR] + 0x04;
 
+                    zero_sprite_rendered = 1 - (bool) sprite_nr;
+                    if(fg_pixel) break;
+                }
+            }
+            bg_prio = (1 - (bool) fg_pixel);
+            fg_prio = (bool) fg_pixel;
+            pixel = fg_pixel + bg_pixel * bg_prio;
+            palette = fg_palette * fg_prio + bg_palette * bg_prio;
+            color_idx = (pixel << 0) | (palette << 2);
+
+            bus_read(&ppu_bus, (color_idx + 0x3F00));
+            uint8_t
+                clr = ppu_bus.data_;
+            uint16_t
+                pixel_idx = ppu.cycle_ - 1 + (uint16_t) ppu.scanline_ * 256;
+
+            ppu.pixels_[pixel_idx] = clr;
         }
 
         else if(ppu.cycle_ >= 321 && ppu.cycle_ <= 340)
@@ -327,44 +385,86 @@ void ppu_run(void)
             /*
              * Load sprites into secondary OAM
              */
-            memset(ppu.sprite_shifters_, 0x00, sizeof(ppu.sprite_shifters_));
+            memset(ppu.sprite_shifters_lo_, 0x00, sizeof(ppu.sprite_shifters_lo_));
+            memset(ppu.sprite_shifters_hi_, 0x00, sizeof(ppu.sprite_shifters_hi_));
             memset(ppu.oam_sec_, 0xFFFFFFFF, sizeof(ppu.oam_sec_));
 
             bool
                 negative,
                 in_range,
-                zero_sprite;
+//                zero_sprite,
+                overflow;
             uint32_t
-                *oam_prm_p = ppu.oam_prm_,
-                *oam_sec_p  = ppu.oam_sec_;
+                *oam_prm_p = ppu.oam_prm_;
+
+            ppu.oam_sec_p  = ppu.oam_sec_;
 
             for(;
                 oam_prm_p < ppu.oam_sec_ &&
-                oam_sec_p < ppu.oam_dummy_;
+                ppu.oam_sec_p < ppu.oam_dummy_ + 1;
                 )
             {
-                int16_t
+                uint16_t
                     oam_y = *((uint8_t *) oam_prm_p),
                     scan_y = ppu.scanline_,
-                    result = (oam_y - scan_y);
+                    result = (scan_y - oam_y);
                 bool
-                    negative =  result & 1 << 15,
+                    positive =  1 - (bool) (result & 1 << 15),
                     /**
                      * Need to fix so it takes into account height of sprite, 16 / 8
                      */
-                    in_range =  !(result & (~0b111)) ^ (~0b111);
+                    in_range =  1 - (bool) (result & (~0b111));
 
-                *ppu.oam_sec_ = *ppu.oam_prm_;
+                *ppu.oam_sec_p = *oam_prm_p;
                 ++oam_prm_p;
-                oam_sec_p += negative * in_range;
+                ppu.oam_sec_p += positive * in_range;
             }
             /*
              * Set sprite overflow,
              * and if zero_sprite
              */
-            ppu.regs_[PPU_STATUS] |= (!((bool)((uint64_t) oam_sec_p ^ (uint64_t) ppu.oam_dummy_))) << 5;
-            zero_sprite = !((uint64_t) oam_sec_p ^ (uint64_t) ppu.oam_sec_);
-            *oam_sec_p = 0xFFFFFFFF;
+//            zero_sprite = (uint64_t) ppu.oam_sec_p ^ (uint64_t) ppu.oam_sec_;
+            overflow = 1 - (bool)((uint64_t) ppu.oam_sec_p ^ (uint64_t) (ppu.oam_dummy_ + 4));
+            ppu.regs_[PPU_STATUS] |=  overflow << 5;
+            ppu.oam_sec_p -= overflow;
+            *ppu.oam_sec_p = 0xFFFFFFFF;
+
+
+
+        }
+        if(ppu.cycle_ == 340)
+        {
+            for(uint32_t *t_p = ppu.oam_sec_,
+                index = 0;
+                t_p < ppu.oam_sec_p;
+                ++t_p,
+                ++index)
+            {
+                uint8_t
+                    sprite_pattern_lo,
+                    sprite_pattern_hi;
+                uint16_t
+                    sprite_pattern_addr;
+
+                uint8_t
+                    y_t = (uint8_t) *(((uint8_t *) t_p) + OAM_Y);
+
+                uint16_t
+                    frst = (((bool) (ppu.regs_[PPU_CTRL] & PPU_CTRL_SPRITE_TABLE)) << 12),
+                    scnd = (*(((uint8_t *) t_p) + OAM_ID) << 4),
+                    thrd =  ppu.scanline_ - y_t;
+
+                sprite_pattern_addr =
+                        frst | scnd | thrd;
+
+                bus_read(&ppu_bus, sprite_pattern_addr);
+                sprite_pattern_lo = ppu_bus.data_;
+                bus_read(&ppu_bus, sprite_pattern_addr + 8);
+                sprite_pattern_hi = ppu_bus.data_;
+
+                ppu.sprite_shifters_lo_[index] = sprite_pattern_lo;
+                ppu.sprite_shifters_hi_[index] = sprite_pattern_hi;
+            }
         }
     }
 

@@ -19,8 +19,9 @@ struct ppu_2C0X
         regs_[8],
         oam_prm_[256],
         oam_sec_[4 * 8],
-        oam_dummy_[4],// One extra dummy entry
-        sprite_shifters_[16],
+        oam_dummy_[4 * 2],// One extra dummy entry
+        sprite_shifters_lo_[16],
+        sprite_shifters_hi_[16],
         ppu_data_buffer_,
         x_finescroll_,
         next_pattern_lo_,
@@ -39,7 +40,8 @@ struct ppu_2C0X
         shift_pattern_hi_,
         shift_pattern_lo_,
         tile_idx_;
-
+    uint32_t
+        *oam_sec_p;
     uint8_t
         pixels_[256 * 240];
 

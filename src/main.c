@@ -46,16 +46,16 @@ int main(int argc, char **argv)
             cpu_run();
             mapper_destroy();
         }
-//        #pragma omp section
-//        {
-//            tui_init();
-//            while(!shutdown)
-//            {
-//                tui_draw();
-//                //nanosleep(&nanosecs, NULL);
-//            }
-//            //tui_destroy();
-//        }
+        #pragma omp section
+        {
+            tui_init();
+            while(!shutdown)
+            {
+                tui_draw();
+                //nanosleep(&nanosecs, NULL);
+            }
+            //tui_destroy();
+        }
         #pragma omp section
         {
             display_init();
