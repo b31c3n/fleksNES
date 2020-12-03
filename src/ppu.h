@@ -46,7 +46,8 @@ struct ppu_2C0X
         pixels_[256 * 240];
 
     bool
-        latch_;
+        latch_,
+        zero_sprite_detected_;
 
 } extern ppu;
 

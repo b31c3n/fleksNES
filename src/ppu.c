@@ -227,7 +227,7 @@ void ppu_run(void)
          */
         if(ppu.cycle_ == 1)
         {
-            ppu.regs_[PPU_STATUS] = PPU_STATUS & ~PPU_STATUS_VBLANK;
+            ppu.regs_[PPU_STATUS] = PPU_STATUS & ~(PPU_STATUS_VBLANK | PPU_STATUS_SPRITE_ZERO_HIT);
 
             #ifdef CLOCK
                 gettimeofday(&end, NULL);
@@ -301,8 +301,9 @@ void ppu_run(void)
                 color_idx;
 
             bool
-                zero_sprite_detected = (uint64_t) ppu.oam_sec_p ^ (uint64_t) ppu.oam_sec_,
+                zero_sprite_detected = ppu.zero_sprite_detected_,
                 zero_sprite_rendered,
+                zero_hit,
                 fg_prio,
                 bg_prio;
 
@@ -351,7 +352,7 @@ void ppu_run(void)
             /*
              * Calculate priorities
              */
-            bg_prio = (1 - fg_prio * ((bool) fg_pixel)) * (bool) bg_pixel;
+            bg_prio = (1 - ((fg_prio & ((bool) fg_pixel))) & (bool) bg_pixel);
             fg_prio = 1 - bg_prio;
             pixel = fg_pixel * fg_prio + bg_pixel * bg_prio;
 
@@ -369,6 +370,33 @@ void ppu_run(void)
                 pixel_idx = ppu.cycle_ - 1 + (uint16_t) ppu.scanline_ * 256;
 
             ppu.pixels_[pixel_idx] = clr;
+
+            /**
+             * Zero sprite hit?
+             */
+            zero_hit = (bool) bg_pixel
+                        & (bool) (fg_pixel)
+                        & (bool) (ppu.regs_[PPU_MASK] & PPU_MASK_SHOW_BACKGROUNND)
+                        & (bool) (ppu.regs_[PPU_MASK] & PPU_MASK_SHOW_SPRITE)
+                        & zero_sprite_detected
+                        & zero_sprite_rendered;
+
+            bool
+                left_most_render =
+                     (ppu.regs_[PPU_MASK]
+                      & (bool) (PPU_MASK_SHOW_LEFTMOST_BACKGROUND | PPU_MASK_SHOW_LEFTMOST_SPRITE))
+                      & (1 - (bool) (ppu.cycle_ ^ (~0b111)));
+
+//            zero_hit = (1 - left_most_render)
+//                        & zero_hit;
+
+            if(zero_sprite_rendered && zero_sprite_detected
+                    && bg_pixel && fg_pixel)
+            {
+                puts("hit");
+            }
+
+            ppu.regs_[PPU_STATUS] |= zero_hit << 6;
         }
 
         else if(ppu.cycle_ >= 321 && ppu.cycle_ <= 340)
@@ -399,6 +427,7 @@ void ppu_run(void)
                 *oam_prm_p = ppu.oam_prm_;
 
             ppu.oam_sec_p  = ppu.oam_sec_;
+            ppu.zero_sprite_detected_ = false;
 
             /*
              * Load sprite data into secondary OAM
@@ -420,8 +449,14 @@ void ppu_run(void)
                     in_range =  1 - (bool) (result & (~0b111));
 
                 *ppu.oam_sec_p = *oam_prm_p;
+                ppu.oam_sec_p += positive & in_range;
+
+                /**
+                 * Zero sprite?
+                 */
+                ppu.zero_sprite_detected_ += 1 - (bool) ((uint64_t) oam_prm_p ^ (uint64_t) ppu.oam_prm_);
+                ppu.zero_sprite_detected_ &= positive & in_range;
                 ++oam_prm_p;
-                ppu.oam_sec_p += positive * in_range;
             }
 
             /*
