@@ -11,6 +11,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+extern uint8_t
+    *prg_rom,
+    *prg_ram,
+    *chr_rom;
+
 void mapper_init(char *file_name);
 void mapper_destroy();
 

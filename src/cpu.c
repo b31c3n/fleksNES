@@ -7,11 +7,13 @@
 
 #include <stdint.h>
 #include <omp.h>
+
 #include "cpu.h"
 #include "instruction_tbl.h"
 #include "clock.h"
 #include "ppu.h"
 #include "bus.h"
+#include "config.h"
 
 bool shutdown = 0;
 
@@ -153,25 +155,18 @@ void cpu_run()
             }
             struct instruction *instruction = &instruction_tbl[cpu.opcode_];
 
-            /*
-             * logging
-             */
-
-//            cpu.program_counter_.word_ -= instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
-//            log_state();
-//            log_write("\n\0");
-//            cpu.program_counter_.word_ += instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
-
-            /*
-             *  end logging
-             */
+            #ifdef LOG
+                cpu.program_counter_.word_ -= instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
+                log_state();
+                log_write("\n\0");
+                cpu.program_counter_.word_ += instruction->nr_bytes_ ? instruction->nr_bytes_ : 0;
+            #endif
 
             cpu_execute_instruction();
         }
         cpu.suspend_etc_ ^=  CPU_ODD_CYCLE;
     }
 }
-
 
 omp_lock_t writelock;
 static int temp_instruction;
@@ -185,14 +180,12 @@ void cpu_set_instruction()
             *byte = &temp_instruction,
             *address = &cpu.opcode_args_;
 
-
         cpu.opcode_ = temp_instruction;
         ++byte;
         *address = *byte;
         ++byte;
         ++address;
         *address = *byte;
-
     }
     temp_instruction = 0;
     omp_unset_lock(&writelock);

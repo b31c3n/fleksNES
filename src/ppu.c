@@ -13,8 +13,7 @@
 #include "cpu.h"
 #include "ppu_comm.h"
 #include "peripherals.h"
-
-//#define CLOCK
+#include "config.h"
 
 static bool rendering()
 {
@@ -229,7 +228,7 @@ void ppu_run(void)
         {
             ppu.regs_[PPU_STATUS] = PPU_STATUS & ~(PPU_STATUS_VBLANK | PPU_STATUS_SPRITE_ZERO_HIT);
 
-            #ifdef CLOCK
+            #ifdef MEASURE_FPS
                 gettimeofday(&end, NULL);
                 if(end.tv_sec - start.tv_sec > 1)
                 {
@@ -375,9 +374,9 @@ void ppu_run(void)
              * Zero sprite hit?
              */
             zero_hit = (bool) bg_pixel
-                        & (bool) (fg_pixel)
-                        & (bool) (ppu.regs_[PPU_MASK] & PPU_MASK_SHOW_BACKGROUNND)
-                        & (bool) (ppu.regs_[PPU_MASK] & PPU_MASK_SHOW_SPRITE)
+                        & ((bool) (fg_pixel))
+                        & (1 - (bool) (ppu.regs_[PPU_MASK] & PPU_MASK_SHOW_BACKGROUNND))
+                        & (1 - (bool) (ppu.regs_[PPU_MASK] & PPU_MASK_SHOW_SPRITE))
                         & zero_sprite_detected
                         & zero_sprite_rendered;
 
@@ -387,8 +386,8 @@ void ppu_run(void)
                       & (bool) (PPU_MASK_SHOW_LEFTMOST_BACKGROUND | PPU_MASK_SHOW_LEFTMOST_SPRITE))
                       & (1 - (bool) (ppu.cycle_ ^ (~0b111)));
 
-//            zero_hit = (1 - left_most_render)
-//                        & zero_hit;
+            zero_hit = (1 - left_most_render)
+                        & zero_hit;
 
             if(zero_sprite_rendered && zero_sprite_detected
                     && bg_pixel && fg_pixel)
@@ -524,8 +523,6 @@ void ppu_run(void)
             cpu.nmi_ = 1;
         }
     }
-
-
 }
 
 void ppu_write()

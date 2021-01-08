@@ -61,7 +61,7 @@ void mapper_read_ppu_side()
     this->bus_->data_ = this->memory_[address];
 }
 
-static uint8_t
+uint8_t
     *prg_rom,
     *prg_ram,
     *chr_rom;
@@ -130,8 +130,10 @@ void mapper_init(char *file_name)
         ppu_peripheral_chrrom.irq_line_ = 0;
         ppu_peripheral_chrrom.memory_ = chr_rom;
 
-        *cpu.program_counter_.lsb_ = prg_rom[0x3FFC];
-        *cpu.program_counter_.msb_ = prg_rom[0x3FFD];
+        *cpu.program_counter_.lsb_ = prg_rom[prg_size - 4];
+        *cpu.program_counter_.msb_ = prg_rom[prg_size - 3];
+//        *cpu.program_counter_.lsb_ = prg_rom[0x0];
+//        *cpu.program_counter_.msb_ = prg_rom[0x0];
     }
     else exit(1);
 }

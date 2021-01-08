@@ -27,7 +27,7 @@ struct tui_comp
         show_;
 };
 
-#define TUI_NR_COMPS 1
+#define TUI_NR_COMPS 3
 extern struct tui_comp
     tui_components[TUI_NR_COMPS];
 

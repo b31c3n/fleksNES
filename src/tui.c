@@ -14,6 +14,8 @@
 #include "cpu.h"
 #include "bus.h"
 #include "ppu.h"
+#include "nametable.h"
+#include "mapper.h"
 
 void tui_init()
 {
@@ -54,7 +56,7 @@ void tui_destroy()
 }
 
 /**
- * Mem1
+ * OAM
  */
 static struct tui_comp
     *tui_oam = NULL;
@@ -90,161 +92,80 @@ void oam_init(void *this)
     tui_oam = this;
 }
 
-//uint16_t
-//    tui_mem_offsets[] = {0x23C0, 0x3f00};
-//void tui_get_command()
-//{
-//    char
-//        buffer[80],
-//        temp[80],
-//        *p = buffer;
-//    bool
-//        is_opcode = true;
-//
-//    wgetstr(tui_components[TUI_NR_COMPS - 1].window_, buffer);
-//
-//    /**
-//     * Opcode stuff
-//     */
-//    for(; *p != '\0' && is_opcode; ++p)
-//            is_opcode = isxdigit(*p);
-//
-//    if(is_opcode)
-//    {
-//        int temp = (int)strtol(buffer, NULL, 16);
-//        cpu_load_instruction(temp);
-//        return;
-//    }
-//
-//    /**
-//     * Memory stuff
-//     */
-//    strcpy(temp, buffer);
-//    char
-//        *arg1 = temp,
-//        *arg2 = &temp[3];
-//    arg1[2] = arg2[3] = '\0';
-//
-//    bool
-//        move_mem1 = !(strcmp(arg1, "m1")),
-//        move_mem2 = !(strcmp(arg1, "m2")),
-//        is_hex = true;
-//    uint8_t
-//        target = move_mem1 ? 0 : 1;
-//
-//    for(p = arg2; *p != '\0' && is_hex; ++p)
-//        is_hex = isxdigit(*p);
-//
-//    if(move_mem1 || move_mem2)
-//    {
-//        if(!is_hex)
-//        {
-//            if(!strcmp(&temp[3], "ram")) tui_components[target].component_ = &cpu_peripheral_ram;
-//            if(!strcmp(&temp[3], "cr0")) tui_components[target].component_ = &cpu_peripheral_prgram;
-//            if(!strcmp(&temp[3], "cr1")) tui_components[target].component_ = &cpu_peripheral_prgrom;
-//            if(!strcmp(&temp[3], "cr2")) tui_components[target].component_ = &ppu_peripheral_chrrom;
-//            tui_components[target].init(&tui_components[target]);
-//        }
-//        else
-//        {
-//            arg2[2] = arg2[3] = '0';
-//            arg2[4] = '\0';
-//
-//            struct peripheral
-//                *temp = (struct peripheral *) tui_components[target].component_;
-//            uint16_t
-//                offset = (int)strtol(arg2, NULL, 16),
-//                high_limit = temp->address_max_ & temp->mirror_mask_,
-//                low_limit = temp->address_min_;
-//
-//            if(offset >= low_limit && offset + 0xFF <= high_limit)
-//                tui_mem_offsets[target] = offset;
-//        }
-//    }
-//}
-//
-//
-///**
-// * Mem1
-// */
-//static struct tui_comp
-//    *tui_mem1 = NULL;
-//static struct peripheral
-//    *per_mem1 = NULL;
-//
-//void tui_mem1_update()
-//{
-//    wmove(tui_mem1->window_, 0, 0);
-//    wprintw(tui_mem1->window_, "     ");
-//    for(uint8_t j = 0; j <= 0xF; ++j)
-//    {
-//        wprintw(tui_mem1->window_, "%02x ", j);
-//    }
-//    uint16_t
-//        i = tui_mem_offsets[0],
-//        stop = i + 0xF0;
-//
-//    //stop &= per_mem1->mirror_mask_;
-//
-//    for(;i <= stop; i += 0x10)
-//    {
-//        wprintw(tui_mem1->window_, "\n%04x ",i);
-//        for(uint8_t j = 0; j <= 0xF; ++j)
-//        {
-//            uint8_t data = per_mem1->memory_[i + j - per_mem1->address_min_];
-//            wprintw(tui_mem1->window_, "%02x ", data);
-//        }
-//    }
-//}
-//
-//void tui_mem1_init(void *this)
-//{
-//    tui_mem1 = this;
-//    per_mem1 = tui_mem1->component_;
-////    tui_mem_offsets[0] = per_mem1->address_min_;
-//    tui_mem_offsets[0] = 0x23C0;
-//}
-//
-///**
-// * Mem2
-// */
-//static struct tui_comp
-//    *tui_mem2 = NULL;
-//static struct peripheral
-//    *per_mem2 = NULL;
-//
-//void tui_mem2_update()
-//{
-//    wmove(tui_mem2->window_, 0, 0);
-//    wprintw(tui_mem2->window_, "     ");
-//    for(uint8_t j = 0; j <= 0xF; ++j)
-//    {
-//        wprintw(tui_mem2->window_, "%02x ", j);
-//    }
-//    uint16_t
-//        i = tui_mem_offsets[1],
-//        stop = i + 0xF0;
-//
-//    stop &= per_mem2->mirror_mask_;
-//
-//    for(;i <= stop; i += 0x10)
-//    {
-//        wprintw(tui_mem2->window_, "\n%04x ",i);
-//        for(uint8_t j = 0; j <= 0xF; ++j)
-//        {
-//            uint8_t data = per_mem2->memory_[i + j - per_mem2->address_min_];
-//            wprintw(tui_mem2->window_, "%02x ", data);
-//        }
-//    }
-//}
-//
-//void tui_mem2_init(void *this)
-//{
-//    tui_mem2 = this;
-//    per_mem2 = tui_mem2->component_;
-//    tui_mem_offsets[1] = per_mem2->address_min_;
-//}
-//
+/**
+ * NAME TABLE
+ */
+static struct tui_comp
+    *tui_ntable = NULL;
+
+static uint16_t
+    ntable_offset = 0;
+
+void ntable_update()
+{
+    wmove(tui_ntable->window_, 0, 0);
+    wprintw(tui_ntable->window_, "     ");
+    for(uint8_t j = 0; j <= 0xF; ++j)
+    {
+        wprintw(tui_ntable->window_, "%02x ", j);
+    }
+    uint16_t
+        i = ntable_offset,
+        stop = i + 0xF0;
+
+    for(;i <= stop; i += 0x10)
+    {
+        wprintw(tui_ntable->window_, "\n%04x ",i);
+        for(uint8_t j = 0; j <= 0xF; ++j)
+        {
+            uint8_t data = nametable_mem[1][i + j];
+            wprintw(tui_ntable->window_, "%02x ", data);
+        }
+    }
+}
+
+void ntable_init(void *this)
+{
+    tui_ntable = this;
+}
+
+/**
+ * PRG ROM
+ */
+static struct tui_comp
+    *tui_prgrom = NULL;
+
+static uint16_t
+    prgrom_offset = 0;
+
+void prgrom_update()
+{
+    wmove(tui_prgrom->window_, 0, 0);
+    wprintw(tui_prgrom->window_, "     ");
+    for(uint8_t j = 0; j <= 0xF; ++j)
+    {
+        wprintw(tui_prgrom->window_, "%02x ", j);
+    }
+    uint16_t
+        i = ntable_offset,
+        stop = i + 0xF0;
+
+    for(;i <= stop; i += 0x10)
+    {
+        wprintw(tui_prgrom->window_, "\n%04x ",i);
+        for(uint8_t j = 0; j <= 0xF; ++j)
+        {
+            uint8_t data = prg_rom[i + j];
+            wprintw(tui_prgrom->window_, "%02x ", data);
+        }
+    }
+}
+
+void prgrom_init(void *this)
+{
+    tui_prgrom = this;
+}
+
 ///**
 // * CPU
 // */
@@ -343,6 +264,23 @@ struct tui_comp
         .h_ = 18,
         .show_ = true,
     },
-
+    {
+        .update = ntable_update,
+        .init = ntable_init,
+        .x_ = 56,
+        .y_ = 0,
+        .w_ = 55,
+        .h_ = 18,
+        .show_ = true,
+    },
+    {
+        .update = prgrom_update,
+        .init = prgrom_init,
+        .x_ = 0,
+        .y_ = 19,
+        .w_ = 55,
+        .h_ = 18,
+        .show_ = true,
+    },
 };
 

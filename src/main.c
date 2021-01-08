@@ -14,6 +14,7 @@
 #include "instruction_tbl.h"
 #include "clock.h"
 #include "ppu.h"
+#include "config.h"
 
 
 void sigint(int signal)
@@ -46,16 +47,18 @@ int main(int argc, char **argv)
             cpu_run();
             mapper_destroy();
         }
-//        #pragma omp section
-//        {
-//            tui_init();
-//            while(!shutdown)
-//            {
-//                tui_draw();
-//                //nanosleep(&nanosecs, NULL);
-//            }
-//            //tui_destroy();
-//        }
+        #ifdef USE_TUI
+        #pragma omp section
+        {
+            tui_init();
+            while(!shutdown)
+            {
+                tui_draw();
+                //nanosleep(&nanosecs, NULL);
+            }
+            //tui_destroy();
+        }
+        #endif
         #pragma omp section
         {
             display_init();
