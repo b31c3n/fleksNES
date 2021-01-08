@@ -30,32 +30,17 @@ void ntable_read()
             *this = &ppu_peripheral_nametable;
         uint16_t
             address = this->bus_->address_;
-        uint8_t
+        bool
             ntable_id;
-        if(header.ver_mirror)
-        {
-            if( (address >= 0x2000 && address <= 0x23FF) ||
-                (address >= 0x2800 && address <= 0x2BFF))
-                ntable_id = 0;
-            else
-                ntable_id = 1;
-        }
-        else if(header.hor_mirror)
-        {
-            if( (address >= 0x2000 && address <= 0x23FF) ||
-                (address >= 0x2400 && address <= 0x27FF))
-                ntable_id = 0;
-            else
-                ntable_id = 1;
-        }
-        else
-            ntable_id = 0;
+
+        ntable_id = 0;
+        ntable_id = header.ver_mirror * (address & 0x1400);
+        ntable_id = header.hor_mirror * (address & 0x1800);
 
         address = (address & this->mirror_mask_) - this->address_min_;
         uint8_t
             data = nametable_mem[ntable_id][address];
         this->bus_->data_ = data;
-
     }
 }
 
@@ -77,26 +62,12 @@ void ntable_write()
             *this = &ppu_peripheral_nametable;
         uint16_t
             address = this->bus_->address_;
-        uint8_t
+        bool
             ntable_id;
-        if(header.ver_mirror)
-        {
-            if( (address >= 0x2000 && address <= 0x23FF) ||
-                (address >= 0x2800 && address <= 0x2BFF))
-                ntable_id = 0;
-            else
-                ntable_id = 1;
-        }
-        else if(header.hor_mirror)
-        {
-            if( (address >= 0x2000 && address <= 0x23FF) ||
-                (address >= 0x2400 && address <= 0x27FF))
-                ntable_id = 0;
-            else
-                ntable_id = 1;
-        }
-        else
-            ntable_id = 0;
+
+        ntable_id = 0;
+        ntable_id = header.ver_mirror * (address & 0x1400);
+        ntable_id = header.hor_mirror * (address & 0x1800);
 
         address = (address & this->mirror_mask_) - this->address_min_;
         uint8_t

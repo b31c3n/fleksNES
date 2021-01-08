@@ -29,7 +29,6 @@ void sigsegv(int signal)
     shutdown = 1;
     tui_destroy();
     puts("Segfault!");
-
 }
 
 int main(int argc, char **argv)
@@ -54,9 +53,7 @@ int main(int argc, char **argv)
             while(!shutdown)
             {
                 tui_draw();
-                //nanosleep(&nanosecs, NULL);
             }
-            //tui_destroy();
         }
         #endif
         #pragma omp section
@@ -66,7 +63,6 @@ int main(int argc, char **argv)
             {
                 display_draw();
                 capture_events();
-                //clock_nanosleep(&nanosecs, NULL);
             }
             display_destroy();
         }
