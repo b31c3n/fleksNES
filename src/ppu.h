@@ -47,7 +47,8 @@ struct ppu_2C0X
 
     bool
         latch_,
-        zero_sprite_detected_;
+        zero_hit_possible_,
+        zero_hit_detected_;
 
 } extern ppu;
 

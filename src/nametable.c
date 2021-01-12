@@ -33,11 +33,12 @@ void ntable_read()
         bool
             ntable_id;
 
+        address &= 0x0FFF;
         ntable_id = 0;
-        ntable_id = header.ver_mirror * (address & 0x1400);
-        ntable_id = header.hor_mirror * (address & 0x1800);
+        ntable_id += header.ver_mirror * ((bool) (address & 0x0400));
+        ntable_id += (1 - header.ver_mirror) * ((bool) (address & 0x0800));
 
-        address = (address & this->mirror_mask_) - this->address_min_;
+        address &= 0x03FF;
         uint8_t
             data = nametable_mem[ntable_id][address];
         this->bus_->data_ = data;
@@ -65,11 +66,12 @@ void ntable_write()
         bool
             ntable_id;
 
+        address &= 0x0FFF;
         ntable_id = 0;
-        ntable_id = header.ver_mirror * (address & 0x1400);
-        ntable_id = header.hor_mirror * (address & 0x1800);
+        ntable_id += header.ver_mirror * ((bool) (address & 0x0400));
+        ntable_id += (1 - header.ver_mirror) * ((bool) (address & 0x0800));
 
-        address = (address & this->mirror_mask_) - this->address_min_;
+        address &= 0x03FF;
         uint8_t
             data = this->bus_->data_;
         nametable_mem[ntable_id][address] = data;
@@ -83,7 +85,7 @@ struct peripheral
     .address_min_ = 0x2000,
     .address_max_ = 0x3EFF,
     .mirror_mask_ = 0x23FF,
-    .memory_ = &nametable_mem[0][0],
+    .memory_ = &nametable_mem[0],
 };
 
 

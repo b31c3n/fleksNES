@@ -78,13 +78,9 @@ static void reset_y()
 
 static void case0()
 {
-    //break;
     /*
      * Nametable byte
      */
-//            uint16_t
-//                pal_shift = (ppu.tile_idx_ / 2) & 0b1;
-//                pal_shift += (((ppu.tile_idx_ / 32) & 0b1) << 1);
     ppu.shift_pattern_lo_   &= 0xFF00,
     ppu.shift_pattern_hi_   &= 0xFF00,
     ppu.shift_pattern_lo_   |= ppu.next_pattern_lo_,
@@ -102,7 +98,6 @@ static void case0()
 
 static void case2()
 {
-    //break;
     /*
      * Attribute table byte
      */
@@ -121,7 +116,6 @@ static void case2()
 
 static void case4()
 {
-    //break;
     /**
      * Getting next tile lsb
      */
@@ -137,7 +131,6 @@ static void case4()
 
 static void case6()
 {
-    //break;
     /**
      * Getting next tile msb
      */
@@ -226,7 +219,8 @@ void ppu_run(void)
          */
         if(ppu.cycle_ == 1)
         {
-            ppu.regs_[PPU_STATUS] = PPU_STATUS & ~(PPU_STATUS_VBLANK | PPU_STATUS_SPRITE_ZERO_HIT);
+            ppu.regs_[PPU_STATUS] &= ~(PPU_STATUS_VBLANK | PPU_STATUS_SPRITE_ZERO_HIT);
+            ppu.zero_hit_possible_ = 1;
 
             #ifdef MEASURE_FPS
                 gettimeofday(&end, NULL);
@@ -253,7 +247,7 @@ void ppu_run(void)
          * Load tiles
          */
         if((ppu.cycle_ >= 1 && ppu.cycle_ <= 256) ||
-                (ppu.cycle_ >= 321 && ppu.cycle_ <= 340))
+                (ppu.cycle_ >= 321 && ppu.cycle_ <= 336))
         {
             shift_bg();
             tile_funcs[(ppu.cycle_ - 1) % 8]();
@@ -269,8 +263,6 @@ void ppu_run(void)
         }
         else if(ppu.cycle_ >= 280 && ppu.cycle_ <= 304)
             reset_y();
-
-
     }
 
     /*
@@ -300,7 +292,7 @@ void ppu_run(void)
                 color_idx;
 
             bool
-                zero_sprite_detected = ppu.zero_sprite_detected_,
+                zero_sprite_detected = ppu.zero_hit_detected_,
                 zero_sprite_rendered,
                 zero_hit,
                 fg_prio,
@@ -375,30 +367,33 @@ void ppu_run(void)
              */
             zero_hit = (bool) bg_pixel
                         & ((bool) (fg_pixel))
-                        & (1 - (bool) (ppu.regs_[PPU_MASK] & PPU_MASK_SHOW_BACKGROUNND))
-                        & (1 - (bool) (ppu.regs_[PPU_MASK] & PPU_MASK_SHOW_SPRITE))
+                        & ((bool) (ppu.regs_[PPU_MASK] & PPU_MASK_SHOW_BACKGROUNND))
+                        & ((bool) (ppu.regs_[PPU_MASK] & PPU_MASK_SHOW_SPRITE))
                         & zero_sprite_detected
-                        & zero_sprite_rendered;
+                        & zero_sprite_rendered
+                        & ((bool) (ppu.cycle_ ^ 0b11111111));
 
             bool
                 left_most_render =
-                     (ppu.regs_[PPU_MASK]
-                      & (bool) (PPU_MASK_SHOW_LEFTMOST_BACKGROUND | PPU_MASK_SHOW_LEFTMOST_SPRITE))
-                      & (1 - (bool) (ppu.cycle_ ^ (~0b111)));
+                     (1 - (bool) ppu.regs_[PPU_MASK] &
+                             (PPU_MASK_SHOW_LEFTMOST_BACKGROUND | PPU_MASK_SHOW_LEFTMOST_SPRITE))
+                      & (1 - (bool) (ppu.cycle_ & (~0b111)));
 
-            zero_hit = (1 - left_most_render)
-                        & zero_hit;
-
-            if(zero_sprite_rendered && zero_sprite_detected
-                    && bg_pixel && fg_pixel)
-            {
-                puts("hit");
-            }
-
+            zero_hit = (1 - left_most_render) & zero_hit & ppu.zero_hit_possible_;
             ppu.regs_[PPU_STATUS] |= zero_hit << 6;
+            ppu.zero_hit_possible_ -= zero_hit;
+
+//            zero_hit = (1 - left_most_render) & zero_hit;
+//
+//            if(zero_hit && ppu.zero_hit_possible_)
+//            {
+//                ppu.regs_[PPU_STATUS] |= zero_hit << 6;
+//                ppu.zero_hit_possible_ = 0;
+//            }
+
         }
 
-        else if(ppu.cycle_ >= 321 && ppu.cycle_ <= 340)
+        else if(ppu.cycle_ >= 321 && ppu.cycle_ <= 336)
         {
             shift_bg();
             tile_funcs[(ppu.cycle_ - 1) % 8]();
@@ -426,7 +421,7 @@ void ppu_run(void)
                 *oam_prm_p = ppu.oam_prm_;
 
             ppu.oam_sec_p  = ppu.oam_sec_;
-            ppu.zero_sprite_detected_ = false;
+            ppu.zero_hit_detected_ = false;
 
             /*
              * Load sprite data into secondary OAM
@@ -437,11 +432,11 @@ void ppu_run(void)
                 )
             {
                 uint16_t
-                    oam_y = *((uint8_t *) oam_prm_p),
+                    oam_y = (uint16_t) *((uint8_t *) oam_prm_p),
                     scan_y = ppu.scanline_,
                     result = (scan_y - oam_y);
                 bool
-                    positive =  1 - (bool) (result & 1 << 15),
+                    positive =  1 - (bool) (result & (1 << 15)),
                     /**
                      * Need to fix so it takes into account height of sprite, 16 / 8
                      */
@@ -453,8 +448,11 @@ void ppu_run(void)
                 /**
                  * Zero sprite?
                  */
-                ppu.zero_sprite_detected_ += 1 - (bool) ((uint64_t) oam_prm_p ^ (uint64_t) ppu.oam_prm_);
-                ppu.zero_sprite_detected_ &= positive & in_range;
+                if(!ppu.zero_hit_detected_)
+                {
+                    ppu.zero_hit_detected_ += 1 - (bool) ((uint64_t) oam_prm_p ^ (uint64_t) ppu.oam_prm_);
+                    ppu.zero_hit_detected_ &= positive & in_range;
+                }
                 ++oam_prm_p;
             }
 
@@ -545,7 +543,7 @@ void ppu_read()
 struct ppu_2C0X ppu =
 {
         .latch_             = false,
-        .scanline_          = 0,
+        .scanline_          = 261,
         .cycle_             = 0,
 };
 

@@ -31,7 +31,6 @@ struct ines_header
     uint16_t
         mapper_nr_;
     bool
-    	hor_mirror,
     	ver_mirror;
 
 } extern header;

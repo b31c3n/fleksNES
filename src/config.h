@@ -8,7 +8,7 @@
 #ifndef SRC_CONFIG_H_
 #define SRC_CONFIG_H_
 
-//#define USE_TUI
+#define USE_TUI
 //#define MEASURE_FPS
 //#define LOG
 

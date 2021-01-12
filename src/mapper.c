@@ -81,7 +81,6 @@ void mapper_init(char *file_name)
         p[i] = fgetc(file_p);
 
     header.ver_mirror = header.flags_[0] & 0b01;
-    header.hor_mirror = (bool) !(header.flags_[0] & 0b01);
     /**
      * Check if bit 2-3 in byte 7 is equal to 2, then do INes 2.0 stuff, otherwise do the stuff below
      */
