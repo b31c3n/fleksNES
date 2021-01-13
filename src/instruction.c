@@ -4,7 +4,6 @@
  *  Created on: May 4, 2020
  *      Author: David Jonsson
  */
-
 #include "instruction.h"
 #include "cpu.h"
 #include "addr_modes.h"
@@ -23,15 +22,6 @@ void branching_stuff(struct instruction *this)
     *cpu.program_counter_.lsb_ = result;
     tick();
 
-//    if(carry || !(result & CPU_STATUS_NEGATIVE))
-//                cpu.status_ |= CPU_STATUS_CARRY;
-//    else        cpu.status_ &= ~CPU_STATUS_CARRY;
-
-//    if(negative && borrow)
-//    {
-//        *cpu.program_counter_.msb_ += ~borrow;
-//        cpu_wait_for_tick();
-//    }
     if(negative && !carry)
     {
         *cpu.program_counter_.msb_ += 0xFF;
@@ -52,25 +42,20 @@ void branching_stuff(struct instruction *this)
 void adc(struct instruction *this)
 {
     uint8_t
-        *operand = this->operand_;
+        operand = *this->operand_,
+        acc     = cpu.accumulator_;
     uint16_t
-        temp = (uint16_t) cpu.accumulator_ + (*operand) + (cpu.status_ & CPU_STATUS_CARRY);
-    if(temp > 0xFF)     cpu.status_ |= CPU_STATUS_CARRY;
-    else                cpu.status_ &= ~CPU_STATUS_CARRY;
+        result  = (uint16_t) cpu.accumulator_ + operand + (cpu.status_ & CPU_STATUS_CARRY);
 
-    if(temp & CPU_STATUS_NEGATIVE)  cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                            cpu.status_ &= ~CPU_STATUS_NEGATIVE;
+    uint8_t
+        carry       = (bool) (result & 0x100),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1),
+        overflow    = (~(operand ^ acc) & (result ^ acc) & 0x80) >> 1;
 
-    if((cpu.accumulator_ & CPU_STATUS_NEGATIVE) == (*operand & CPU_STATUS_NEGATIVE) &&
-       (cpu.accumulator_ & CPU_STATUS_NEGATIVE) != (cpu.status_ & CPU_STATUS_NEGATIVE))
-        cpu.status_ |= CPU_STATUS_OVERFLOW;
-    else
-        cpu.status_ &= ~CPU_STATUS_OVERFLOW;
-
-    if(!(uint8_t) temp)     cpu.status_ |= CPU_STATUS_ZERO;
-    else                    cpu.status_ &= ~CPU_STATUS_ZERO;
-
-    cpu.accumulator_ = temp;
+    cpu.status_ &= 0b00111100;
+    cpu.status_ |= carry | negative | overflow | zero;
+    cpu.accumulator_ = result & 0xFF;
 }
 
 /**
@@ -79,15 +64,15 @@ void adc(struct instruction *this)
  */
 void and(struct instruction *this)
 {
-    uint8_t *operand = this->operand_;
-    cpu.accumulator_ &= *operand;
-    if(!cpu.accumulator_)   cpu.status_ |= CPU_STATUS_ZERO;
-    else                    cpu.status_ &= ~CPU_STATUS_ZERO;
+    cpu.accumulator_ &= *this->operand_;
 
-    if(cpu.accumulator_ & CPU_STATUS_NEGATIVE)
-        cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else
-        cpu.status_ &= ~CPU_STATUS_NEGATIVE;
+    uint8_t
+        acc         = cpu.accumulator_,
+        negative    = acc & 0x80,
+        zero        = 2 - ((bool) (acc & 0xFF) << 1);
+
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 }
 
 /**
@@ -99,21 +84,17 @@ void asl(struct instruction *this)
     uint8_t
         *address = this->operand_;
     uint16_t
-        temp = *address;
+        result = (*address) << 1;
 
-    temp <<=  1;
+    uint8_t
+        carry       = (bool) (result & 0x100),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1);
 
+    cpu.status_ &= 0b01111100;
+    cpu.status_ |= negative | zero | carry;
 
-    if(temp & CPU_STATUS_NEGATIVE)  cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                            cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(!(uint8_t) temp) cpu.status_ |= CPU_STATUS_ZERO;
-    else                cpu.status_ &= ~CPU_STATUS_ZERO;
-
-    if(temp > 0xFF) cpu.status_ |= CPU_STATUS_CARRY;
-    else            cpu.status_ &= ~CPU_STATUS_CARRY;
-
-    *address = temp;
+    *address = result;
 }
 
 /**
@@ -161,15 +142,14 @@ void beq(struct instruction *this)
  */
 void bit(struct instruction *this)
 {
-    uint8_t *address = this->operand_;
-    if(!(cpu.accumulator_ & *address))
-        cpu.status_ |= CPU_STATUS_ZERO;
+    uint8_t
+        operand     = *this->operand_,
+        negative    = operand & 0x80,
+        overflow    = operand & 0x60,
+        zero        = (1 - (bool) (cpu.accumulator_ & operand)) << 1;
 
-    if(*address & CPU_STATUS_NEGATIVE)  cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                                cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(*address & CPU_STATUS_OVERFLOW)  cpu.status_ |= CPU_STATUS_OVERFLOW;
-    else                                cpu.status_ &= ~CPU_STATUS_OVERFLOW;
+    cpu.status_ &= 0b00111101;
+    cpu.status_ |= overflow | negative | zero;
 }
 
 /**
@@ -239,16 +219,16 @@ void brk(struct instruction *this)
     bus_write(&cpu_bus, cpu.stack_pointer_.word_);
     --*cpu.stack_pointer_.lsb_;
 
-    if(cpu.nmi_)
-    {
-        effective_addr.word_ = nmi_addr;
-        cpu.nmi_ = 0;
-    }
-    else
-    {
-        effective_addr.word_ = irq_addr;
-        cpu.irq_ = 0;
-    }
+    /*
+     * Non maskable interrupt?
+     */
+    bool
+        nmi = (bool) cpu.nmi_;
+
+    effective_addr.word_ += nmi_addr * nmi;
+    effective_addr.word_ += irq_addr * (1 - nmi);
+    cpu.nmi_ -= cpu.nmi_ * nmi;
+    cpu.irq_ -= cpu.irq_ * (1 - nmi);
 
     bus_read(&cpu_bus, effective_addr.word_);
     *cpu.program_counter_.lsb_ = cpu_bus.data_;
@@ -329,17 +309,13 @@ void clv(struct instruction *this)
 void cmp(struct instruction *this)
 {
     uint8_t
-        *operand = this->operand_,
-        result = cpu.accumulator_ - *operand;
+        result      = cpu.accumulator_ - *this->operand_,
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1),
+        carry       = (bool) (*this->operand_ <= cpu.accumulator_);
 
-    if(result)  cpu.status_ &= ~CPU_STATUS_ZERO;
-    else        cpu.status_ |= CPU_STATUS_ZERO;
-
-    if(result & CPU_STATUS_NEGATIVE)    cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                                cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(*operand <= cpu.accumulator_)    cpu.status_ |= CPU_STATUS_CARRY;
-    else                                cpu.status_ &= ~CPU_STATUS_CARRY;
+    cpu.status_ &= 0b01111100;
+    cpu.status_ |= negative | zero | carry;
 }
 
 /**
@@ -350,16 +326,13 @@ void cpx(struct instruction *this)
 {
     uint8_t
         *operand = this->operand_,
-        result = cpu.x_ - *operand;
+        result = cpu.x_ - *operand,
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1),
+        carry       = (bool) (*this->operand_ <= cpu.x_);
 
-    if(result)  cpu.status_ &= ~CPU_STATUS_ZERO;
-    else        cpu.status_ |= CPU_STATUS_ZERO;
-
-    if(result & CPU_STATUS_NEGATIVE)    cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                                cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(*operand <= cpu.x_)              cpu.status_ |= CPU_STATUS_CARRY;
-    else                                cpu.status_ &= ~CPU_STATUS_CARRY;
+    cpu.status_ &= 0b01111100;
+    cpu.status_ |= negative | zero | carry;
 }
 
 /**
@@ -370,16 +343,13 @@ void cpy(struct instruction *this)
 {
     uint8_t
         *operand = this->operand_,
-        result = cpu.y_ - *operand;
+        result = cpu.y_ - *operand,
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1),
+        carry       = (bool) (*this->operand_ <= cpu.y_);
 
-    if(result)  cpu.status_ &= ~CPU_STATUS_ZERO;
-    else        cpu.status_ |= CPU_STATUS_ZERO;
-
-    if(result & CPU_STATUS_NEGATIVE)    cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                                cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(*operand <= cpu.y_)              cpu.status_ |= CPU_STATUS_CARRY;
-    else                                cpu.status_ &= ~CPU_STATUS_CARRY;
+    cpu.status_ &= 0b01111100;
+    cpu.status_ |= negative | zero | carry;
 }
 
 /**
@@ -390,13 +360,12 @@ void dec(struct instruction *this)
 {
     uint8_t
         *operand = this->operand_,
-        result = --(*operand);
+        result = --(*operand),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1);
 
-    if(result & CPU_STATUS_NEGATIVE)    cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                                cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(result)  cpu.status_ &= ~CPU_STATUS_ZERO;
-    else        cpu.status_ |= CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 
     *operand = result;
 }
@@ -409,13 +378,12 @@ void dex(struct instruction *this)
 {
     uint8_t
         *operand = &cpu.x_,
-        result = --(*operand);
+        result = --(*operand),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1);
 
-    if(result & CPU_STATUS_NEGATIVE)    cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                                cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(result)  cpu.status_ &= ~CPU_STATUS_ZERO;
-    else        cpu.status_ |= CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 
     *operand = result;
 }
@@ -428,13 +396,12 @@ void dey(struct instruction *this)
 {
     uint8_t
         *operand = &cpu.y_,
-        result = --(*operand);
+        result = --(*operand),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1);
 
-    if(result & CPU_STATUS_NEGATIVE)    cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                                cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(result)  cpu.status_ &= ~CPU_STATUS_ZERO;
-    else        cpu.status_ |= CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 
     *operand = result;
 }
@@ -447,13 +414,12 @@ void eor(struct instruction *this)
 {
     uint8_t
         *operand = this->operand_,
-        result = cpu.accumulator_ ^ (*operand);
+        result = cpu.accumulator_ ^ (*operand),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1);
 
-    if(result & CPU_STATUS_NEGATIVE)    cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                                cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(result)  cpu.status_ &= ~CPU_STATUS_ZERO;
-    else        cpu.status_ |= CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 
     cpu.accumulator_ = result;
 }
@@ -466,13 +432,12 @@ void inc(struct instruction *this)
 {
     uint8_t
         *operand = this->operand_,
-        result = 1 + (*operand);
+        result = 1 + (*operand),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1);
 
-    if(result & CPU_STATUS_NEGATIVE)  cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                        cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(result)  cpu.status_ &= ~CPU_STATUS_ZERO;
-    else        cpu.status_ |= CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 
     *operand = result;
 }
@@ -485,13 +450,12 @@ void inx(struct instruction *this)
 {
     uint8_t
         *operand = &cpu.x_,
-        result = 1 + (*operand);
+        result = 1 + (*operand),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1);
 
-    if(result & CPU_STATUS_NEGATIVE)  cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                        cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(result)  cpu.status_ &= ~CPU_STATUS_ZERO;
-    else        cpu.status_ |= CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 
     *operand = result;
 }
@@ -504,13 +468,12 @@ void iny(struct instruction *this)
 {
     uint8_t
         *operand = &cpu.y_,
-        result = 1 + (*operand);
+        result = 1 + (*operand),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1);
 
-    if(result & CPU_STATUS_NEGATIVE)  cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                        cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(result)  cpu.status_ &= ~CPU_STATUS_ZERO;
-    else        cpu.status_ |= CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 
     *operand = result;
 }
@@ -563,13 +526,12 @@ void lda(struct instruction *this)
 {
     uint8_t
         *operand = this->operand_,
-        result = (*operand);
+        result = (*operand),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1);
 
-    if(result & CPU_STATUS_NEGATIVE)    cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                                cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(result)  cpu.status_ &= ~CPU_STATUS_ZERO;
-    else        cpu.status_ |= CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 
     cpu.accumulator_ = result;
 }
@@ -582,13 +544,12 @@ void ldx(struct instruction *this)
 {
     uint8_t
         *operand = this->operand_,
-        result = (*operand);
+        result = (*operand),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1);
 
-    if(result & CPU_STATUS_NEGATIVE)  cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                        cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(result)  cpu.status_ &= ~CPU_STATUS_ZERO;
-    else        cpu.status_ |= CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 
     cpu.x_ = result;
 }
@@ -601,13 +562,12 @@ void ldy(struct instruction *this)
 {
     uint8_t
         *operand = this->operand_,
-        result = (*operand);
+        result = (*operand),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1);
 
-    if(result & CPU_STATUS_NEGATIVE)  cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                        cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(result)  cpu.status_ &= ~CPU_STATUS_ZERO;
-    else        cpu.status_ |= CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 
     cpu.y_ = result;
 }
@@ -621,19 +581,16 @@ void lsr(struct instruction *this)
     uint8_t
         *address = this->operand_;
     uint16_t
-        temp = *address;
+        result = (*address) >> 1;
 
-    temp >>=  1;
+    uint8_t
+        carry       = (bool) (*address & 0x01),
+        zero        = 2 - ((bool) (result & 0xFF) << 1);
 
-    cpu.status_ &= ~CPU_STATUS_NEGATIVE;
+    cpu.status_ &= 0b01111100;
+    cpu.status_ |= zero | carry;
 
-    if(!(uint8_t) temp) cpu.status_ |= CPU_STATUS_ZERO;
-    else                cpu.status_ &= ~CPU_STATUS_ZERO;
-
-    if(*address & 0x01) cpu.status_ |= CPU_STATUS_CARRY;
-    else                cpu.status_ &= ~CPU_STATUS_CARRY;
-
-    *address = temp;
+    *address = result;
 }
 
 /**
@@ -653,13 +610,12 @@ void ora(struct instruction *this)
 {
     uint8_t
         *operand = this->operand_,
-        result = cpu.accumulator_ | (*operand);
+        result = cpu.accumulator_ | (*operand),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1);
 
-    if(result & CPU_STATUS_NEGATIVE)    cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                                cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(result)  cpu.status_ &= ~CPU_STATUS_ZERO;
-    else        cpu.status_ |= CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 
     cpu.accumulator_ = result;
 }
@@ -696,11 +652,13 @@ void pla(struct instruction *this)
     bus_read(&cpu_bus, cpu.stack_pointer_.word_);
     cpu.accumulator_ = cpu_bus.data_;
 
-    if(cpu.accumulator_ & CPU_STATUS_NEGATIVE)  cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                                        cpu.status_ &= ~CPU_STATUS_NEGATIVE;
+    uint8_t
+        acc         = cpu.accumulator_,
+        negative    = acc & 0x80,
+        zero        = 2 - ((bool) (acc & 0xFF) << 1);
 
-    if(cpu.accumulator_)    cpu.status_ &= ~CPU_STATUS_ZERO;
-    else                    cpu.status_ |= CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 }
 
 /**
@@ -723,21 +681,20 @@ void rol(struct instruction *this)
     uint8_t
         *address = this->operand_;
     uint16_t
-        temp = *address;
+        result = *address;
 
-    temp <<=  1;
-    temp |= cpu.status_ & CPU_STATUS_CARRY;
+    result <<=  1;
+    result |= cpu.status_ & CPU_STATUS_CARRY;
 
-    if(temp & CPU_STATUS_NEGATIVE)  cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                            cpu.status_ &= ~CPU_STATUS_NEGATIVE;
+    uint8_t
+        carry       = (bool) (result & 0x100),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1);
 
-    if(!(uint8_t) temp) cpu.status_ |= CPU_STATUS_ZERO;
-    else                cpu.status_ &= ~CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111100;
+    cpu.status_ |= negative | zero | carry;
 
-    if(temp > 0xFF) cpu.status_ |= CPU_STATUS_CARRY;
-    else            cpu.status_ &= ~CPU_STATUS_CARRY;
-
-    *address = temp;
+    *address = result;
 }
 
 /**
@@ -749,21 +706,20 @@ void ror(struct instruction *this)
     uint8_t
         *address = this->operand_;
     uint16_t
-        temp = *address;
+        result = *address;
 
-    temp >>=  1;
-    temp |= cpu.status_ & CPU_STATUS_CARRY ? CPU_STATUS_NEGATIVE : 0;
+    result >>=  1;
+    result |= (cpu.status_ & CPU_STATUS_CARRY) << 7;
 
-    if(temp & CPU_STATUS_NEGATIVE)  cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                            cpu.status_ &= ~CPU_STATUS_NEGATIVE;
+    uint8_t
+        carry       = (bool) (*address & 0x01),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1);
 
-    if(!(uint8_t) temp) cpu.status_ |= CPU_STATUS_ZERO;
-    else                cpu.status_ &= ~CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111100;
+    cpu.status_ |= negative | zero | carry;
 
-    if(*address & 0x01) cpu.status_ |= CPU_STATUS_CARRY;
-    else                cpu.status_ &= ~CPU_STATUS_CARRY;
-
-    *address = temp;
+    *address = result;
 }
 
 /**
@@ -820,31 +776,20 @@ void rts(struct instruction *this)
 void sbc(struct instruction *this)
 {
     uint8_t
-        *operand = this->operand_,
-        acc = cpu.accumulator_,
-        inv = ~*operand;
+        operand = ~(*this->operand_),
+        acc = cpu.accumulator_;
     uint16_t
-        result = acc + inv;
-    result += cpu.status_ & CPU_STATUS_CARRY;
-    bool
-        carry = (result & 0x100);
+        result = (uint16_t) cpu.accumulator_ + operand + (cpu.status_ & CPU_STATUS_CARRY);
 
-    if(carry || !(result & CPU_STATUS_NEGATIVE))
-                cpu.status_ |= CPU_STATUS_CARRY;
-    else        cpu.status_ &= ~CPU_STATUS_CARRY;
+    uint8_t
+        carry       = (bool) (result & 0x100),
+        negative    = result & 0x80,
+        zero        = 2 - ((bool) (result & 0xFF) << 1),
+        overflow    = (~(operand ^ acc) & (result ^ acc) & 0x80) >> 1;
 
-    if((cpu.accumulator_ & CPU_STATUS_NEGATIVE) == (inv & CPU_STATUS_NEGATIVE) &&
-       (cpu.accumulator_ & CPU_STATUS_NEGATIVE) != (result & CPU_STATUS_NEGATIVE))
-            cpu.status_ |= CPU_STATUS_OVERFLOW;
-    else    cpu.status_ &= ~CPU_STATUS_OVERFLOW;
-
-    if(result & CPU_STATUS_NEGATIVE)    cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                                cpu.status_ &= ~CPU_STATUS_NEGATIVE;
-
-    if(!(uint8_t) result)       cpu.status_ |= CPU_STATUS_ZERO;
-    else                        cpu.status_ &= ~CPU_STATUS_ZERO;
-
-    cpu.accumulator_ = result;
+    cpu.status_ &= 0b00111100;
+    cpu.status_ |= carry | negative | overflow | zero;
+    cpu.accumulator_ = result & 0xFF;
 }
 
 /**
@@ -928,11 +873,13 @@ void tya(struct instruction *this)
 {
     cpu.accumulator_ = cpu.y_;
 
-    if(cpu.accumulator_ & CPU_STATUS_NEGATIVE)  cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                                        cpu.status_ &= ~CPU_STATUS_NEGATIVE;
+    uint8_t
+        acc         = cpu.accumulator_,
+        negative    = acc & 0x80,
+        zero        = 2 - ((bool) (acc & 0xFF) << 1);
 
-    if(cpu.accumulator_)    cpu.status_ &= ~CPU_STATUS_ZERO;
-    else                    cpu.status_ |= CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 }
 
 /**
@@ -943,11 +890,13 @@ void tsx(struct instruction *this)
 {
     cpu.x_ = *cpu.stack_pointer_.lsb_;
 
-    if(cpu.x_ & CPU_STATUS_NEGATIVE)            cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                                        cpu.status_ &= ~CPU_STATUS_NEGATIVE;
+    uint8_t
+        x           = cpu.x_,
+        negative    = x & 0x80,
+        zero        = 2 - ((bool) (x & 0xFF) << 1);
 
-    if(cpu.x_)              cpu.status_ &= ~CPU_STATUS_ZERO;
-    else                    cpu.status_ |= CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 }
 
 /**
@@ -958,11 +907,13 @@ void txa(struct instruction *this)
 {
     cpu.accumulator_ = cpu.x_;
 
-    if(cpu.accumulator_ & CPU_STATUS_NEGATIVE)  cpu.status_ |= CPU_STATUS_NEGATIVE;
-    else                                        cpu.status_ &= ~CPU_STATUS_NEGATIVE;
+    uint8_t
+        acc         = cpu.accumulator_,
+        negative    = acc & 0x80,
+        zero        = 2 - ((bool) (acc & 0xFF) << 1);
 
-    if(cpu.accumulator_)    cpu.status_ &= ~CPU_STATUS_ZERO;
-    else                    cpu.status_ |= CPU_STATUS_ZERO;
+    cpu.status_ &= 0b01111101;
+    cpu.status_ |= negative | zero;
 }
 
 /**
