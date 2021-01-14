@@ -91,7 +91,7 @@ void cpu_execute_instruction()
 }
 
 
-void tick()
+void cpu_tick()
 {
     ++cpu.nr_ticks_;
     ppu_run(), ppu_run(), ppu_run();

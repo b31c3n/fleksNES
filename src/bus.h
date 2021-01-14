@@ -22,7 +22,8 @@ struct bus
         address_;
     void
         (*write[8]) (),
-        (*read[8]) ();
+        (*read[8]) (),
+        (*ticker) ();
 };
 
 extern struct bus

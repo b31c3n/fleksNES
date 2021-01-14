@@ -9,6 +9,9 @@ Debug/src/*
 !Debug/src/subdir.mk
 
 perf*
+callgrind*
+logs/
+oprofile_data/
 
 .project
 .cproject

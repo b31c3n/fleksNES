@@ -59,5 +59,6 @@ extern struct timeval
 void ppu_read();
 void ppu_write();
 void ppu_run(void);
+void ppu_tick(void);
 
 #endif /* SRC_PPU_H_ */

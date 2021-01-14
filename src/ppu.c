@@ -15,6 +15,11 @@
 #include "peripherals.h"
 #include "config.h"
 
+void ppu_tick(void)
+{
+
+}
+
 static bool rendering()
 {
     return ppu.regs_[PPU_MASK] & (PPU_MASK_SHOW_BACKGROUNND | PPU_MASK_SHOW_SPRITE);
@@ -237,11 +242,12 @@ void ppu_run(void)
         /*
          * Check if end of scanline and on odd frame
          */
-        if(ppu.cycle_ == 339 && !(ppu.frame_ % 2))
-        {
-            ppu.cycle_ = 0;
-            ppu.scanline_ = 0;
-        }
+        bool
+            odd_end = ((bool) (ppu.cycle_ ^ 339) - 1) & (ppu.frame_ & 1);
+
+        ppu.cycle_ *= 1 - odd_end;
+        ppu.scanline_ *= 1- odd_end;
+
 
         /**
          * Load tiles
@@ -382,15 +388,6 @@ void ppu_run(void)
             zero_hit = (1 - left_most_render) & zero_hit & ppu.zero_hit_possible_;
             ppu.regs_[PPU_STATUS] |= zero_hit << 6;
             ppu.zero_hit_possible_ -= zero_hit;
-
-//            zero_hit = (1 - left_most_render) & zero_hit;
-//
-//            if(zero_hit && ppu.zero_hit_possible_)
-//            {
-//                ppu.regs_[PPU_STATUS] |= zero_hit << 6;
-//                ppu.zero_hit_possible_ = 0;
-//            }
-
         }
 
         else if(ppu.cycle_ >= 321 && ppu.cycle_ <= 336)

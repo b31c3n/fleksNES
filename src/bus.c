@@ -39,6 +39,7 @@ struct bus
                     mapper_read_cpu_side,
                     mapper_read_cpu_side,
             },
+            .ticker = cpu_tick
     };
 struct bus
     ppu_bus =
@@ -53,6 +54,7 @@ struct bus
                     mapper_read_ppu_side,
                     ntable_read,
             },
+            .ticker = ppu_tick
     };
 
 void bus_read(
@@ -61,8 +63,7 @@ void bus_read(
 {
     bus->address_ = address;
     bus->read[(address) / 0x2000]();
-    if(bus == &cpu_bus)
-        tick();
+    bus->ticker();
 }
 
 void bus_write(
@@ -71,6 +72,5 @@ void bus_write(
 {
     bus->address_ = address;
     bus->write[(address) / 0x2000]();
-    if(bus == &cpu_bus)
-        tick();
+    bus->ticker();
 }
