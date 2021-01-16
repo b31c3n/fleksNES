@@ -7,9 +7,8 @@
 
 #include "ppu_comm.h"
 #include "ppu_constants.h"
-#include "peripherals.h"
 #include "ppu.h"
-
+#include "bus.h"
 
 static void write_ctrl()
 {
@@ -70,27 +69,27 @@ static void write_addr()
 
 static void write_data()
 {
-    ppu_bus.data_ = ppu_comm.ppu_->bus_->data_;
+    ppu_bus.data_ = cpu_bus.data_;
     bus_write(&ppu_bus, ppu.vram_addr_ & 0x3FFF);
     ppu.vram_addr_ += ppu.regs_[PPU_CTRL] & PPU_CTRL_VRAM_INCR ? 32 : 1;
 }
 
 static void read_status()
 {
-    ppu_comm.ppu_->bus_->data_ = ppu.regs_[PPU_STATUS] & 0xE0;
+    cpu_bus.data_ = ppu.regs_[PPU_STATUS] & 0xE0;
     ppu.regs_[PPU_STATUS] &= ~PPU_STATUS_VBLANK;
     ppu.latch_ = 0;
 }
 
 static void read_data()
 {
-    ppu_comm.ppu_->bus_->data_ = ppu.ppu_data_buffer_;
+    cpu_bus.data_ = ppu.ppu_data_buffer_;
     bus_read(&ppu_bus, ppu.vram_addr_ & 0x3FFF);
     ppu.ppu_data_buffer_ = ppu_bus.data_;
 
     if(ppu.vram_addr_ >= 0x3EFF)
     {
-        ppu_comm.ppu_->bus_->data_ = ppu.ppu_data_buffer_;
+        cpu_bus.data_ = ppu.ppu_data_buffer_;
     }
     ppu.vram_addr_ += ppu.regs_[PPU_CTRL] & PPU_CTRL_VRAM_INCR ? 32 : 1;
 }
@@ -103,7 +102,6 @@ static void do_nothing()
 struct ppu_comm_
     ppu_comm =
     {
-            .ppu_ = &cpu_peripheral_ppu,
             .write_funcs =
             {
                     write_ctrl,

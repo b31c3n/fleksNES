@@ -7,7 +7,6 @@
 
 #include "display.h"
 #include "colors.h"
-#include "peripherals.h"
 #include "apu.h"
 #include "ppu.h"
 
@@ -50,72 +49,72 @@ void display_init()
 
 }
 
-static void draw_background(const SDL_PixelFormat *format, Uint32 *pixels)
-{
-    for(size_t tile_idx = 0,
-        pal_shift = 0;
-        tile_idx < 32 * 30;
-        ++tile_idx,
-        pal_shift = (tile_idx / 2) & 0b1,
-        pal_shift += (((tile_idx / 32) & 0b1) << 1)
-    )
-    {
-        uint16_t
-            pattern_idx = ((uint16_t) ppu_peripheral_nametable.memory_[tile_idx]) * 0x10
-                          + 0x1000 * ((bool) (ppu.regs_[PPU_CTRL] & PPU_CTRL_BACKGROUND_ADDR)),
-            attribute = (tile_idx / 4) % (8 * 1) + tile_idx / (32 * 4) * 16 + 0x3C0,
-            palette_idx = ppu_peripheral_nametable.memory_[attribute];
-
-        for(size_t pixel_y = (tile_idx / 32) * 8,
-            cnt_y = 0;
-            cnt_y < 8;
-            ++cnt_y,
-            ++pixel_y)
-        {
-            uint16_t
-                pattern_lsb = pattern_idx + cnt_y,
-                pattern_msb = pattern_idx + cnt_y + 8,
-                low_order_b = (uint16_t) ppu_peripheral_chrrom.memory_[pattern_lsb],
-                high_order_b = ((uint16_t) ppu_peripheral_chrrom.memory_[pattern_msb]) << 1;
-            if(palette_idx)
-            {
-                puts("test");
-            }
-
-            for(size_t cnt_x = 0,
-                pixel_x = (tile_idx % 32) * 8 + 7;
-                cnt_x < 8;
-                ++cnt_x,
-                --pixel_x,
-                low_order_b >>= 1,
-                high_order_b >>= 1)
-            {
-                uint8_t
-                    pal_val = (high_order_b & 0b10) + (low_order_b & 0b01);
-                uint8_t
-                    color_idx = pal_val | (((palette_idx >> (pal_shift * 2)) & 0b11) << 2);
-                if
-                (!((pal_val & 0b01) && (pal_val & 0b10)) && pal_val)
-                {
-                    puts("test");
-                }
-                /*
-                 * Redirect to backdrop color if 2 LSBits of color idx is 0
-                 */
-                color_idx = color_idx * ((color_idx & 0b1) | ((color_idx & 0b10) >> 1));
-
-                uint32_t
-                     color = SDL_MapRGB(
-                                 format,
-                                 COLORS[ppu_peripheral_palette.memory_[color_idx]].r,
-                                 COLORS[ppu_peripheral_palette.memory_[color_idx]].g,
-                                 COLORS[ppu_peripheral_palette.memory_[color_idx]].b);
-
-                pixels[pixel_x + pixel_y * 256] = color;
-            }
-        }
-    }
-}
+//static void draw_background(const SDL_PixelFormat *format, Uint32 *pixels)
+//{
+//    for(size_t tile_idx = 0,
+//        pal_shift = 0;
+//        tile_idx < 32 * 30;
+//        ++tile_idx,
+//        pal_shift = (tile_idx / 2) & 0b1,
+//        pal_shift += (((tile_idx / 32) & 0b1) << 1)
+//    )
+//    {
+//        uint16_t
+//            pattern_idx = ((uint16_t) ppu_peripheral_nametable.memory_[tile_idx]) * 0x10
+//                          + 0x1000 * ((bool) (ppu.regs_[PPU_CTRL] & PPU_CTRL_BACKGROUND_ADDR)),
+//            attribute = (tile_idx / 4) % (8 * 1) + tile_idx / (32 * 4) * 16 + 0x3C0,
+//            palette_idx = ppu_peripheral_nametable.memory_[attribute];
+//
+//        for(size_t pixel_y = (tile_idx / 32) * 8,
+//            cnt_y = 0;
+//            cnt_y < 8;
+//            ++cnt_y,
+//            ++pixel_y)
+//        {
+//            uint16_t
+//                pattern_lsb = pattern_idx + cnt_y,
+//                pattern_msb = pattern_idx + cnt_y + 8,
+//                low_order_b = (uint16_t) ppu_peripheral_chrrom.memory_[pattern_lsb],
+//                high_order_b = ((uint16_t) ppu_peripheral_chrrom.memory_[pattern_msb]) << 1;
+//            if(palette_idx)
+//            {
+//                puts("test");
+//            }
+//
+//            for(size_t cnt_x = 0,
+//                pixel_x = (tile_idx % 32) * 8 + 7;
+//                cnt_x < 8;
+//                ++cnt_x,
+//                --pixel_x,
+//                low_order_b >>= 1,
+//                high_order_b >>= 1)
+//            {
+//                uint8_t
+//                    pal_val = (high_order_b & 0b10) + (low_order_b & 0b01);
+//                uint8_t
+//                    color_idx = pal_val | (((palette_idx >> (pal_shift * 2)) & 0b11) << 2);
+//                if
+//                (!((pal_val & 0b01) && (pal_val & 0b10)) && pal_val)
+//                {
+//                    puts("test");
+//                }
+//                /*
+//                 * Redirect to backdrop color if 2 LSBits of color idx is 0
+//                 */
+//                color_idx = color_idx * ((color_idx & 0b1) | ((color_idx & 0b10) >> 1));
+//
+//                uint32_t
+//                     color = SDL_MapRGB(
+//                                 format,
+//                                 COLORS[ppu_peripheral_palette.memory_[color_idx]].r,
+//                                 COLORS[ppu_peripheral_palette.memory_[color_idx]].g,
+//                                 COLORS[ppu_peripheral_palette.memory_[color_idx]].b);
+//
+//                pixels[pixel_x + pixel_y * 256] = color;
+//            }
+//        }
+//    }
+//}
 
 void capture_events()
 {

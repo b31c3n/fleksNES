@@ -22,22 +22,22 @@ struct bus
                     ram_write,
                     ppu_write,
                     apu_write,
-                    mapper_write_cpu_side,
-                    mapper_write_cpu_side,
-                    mapper_write_cpu_side,
-                    mapper_write_cpu_side,
-                    mapper_write_cpu_side,
+//                    mapper_write_cpu_side,
+//                    mapper_write_cpu_side,
+//                    mapper_write_cpu_side,
+//                    mapper_write_cpu_side,
+//                    mapper_write_cpu_side,
             },
             .read =
             {
                     ram_read,
                     ppu_read,
                     apu_read,
-                    mapper_read_cpu_side,
-                    mapper_read_cpu_side,
-                    mapper_read_cpu_side,
-                    mapper_read_cpu_side,
-                    mapper_read_cpu_side,
+//                    mapper_read_cpu_side,
+//                    mapper_read_cpu_side,
+//                    mapper_read_cpu_side,
+//                    mapper_read_cpu_side,
+//                    mapper_read_cpu_side,
             },
             .ticker = cpu_tick
     };
@@ -46,12 +46,12 @@ struct bus
     {
             .write =
             {
-                    mapper_write_ppu_side,
+                    0,
                     ntable_write,
             },
             .read =
             {
-                    mapper_read_ppu_side,
+                    0,
                     ntable_read,
             },
             .ticker = ppu_tick

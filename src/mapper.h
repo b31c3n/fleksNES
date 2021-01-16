@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 extern uint8_t
     *prg_rom,
@@ -31,13 +32,11 @@ struct ines_header
     uint16_t
         mapper_nr_;
     bool
-    	ver_mirror;
+    	ver_mirror_;
+    FILE
+        *file_;
 
 } extern header;
 
-void mapper_read_cpu_side();
-void mapper_write_cpu_side();
-void mapper_read_ppu_side();
-void mapper_write_ppu_side();
 
 #endif /* SRC_MAPPER_H_ */

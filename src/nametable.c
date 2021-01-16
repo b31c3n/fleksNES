@@ -5,43 +5,39 @@
  *      Author: archie
  */
 
-#include "peripherals.h"
 #include "mapper.h"
 #include "nametable.h"
+#include "bus.h"
 
 uint8_t
-	nametable_mem[2][1024];
+	nametable_mem[2][1024],
+    palette_mem[0x20];
 
 void ntable_read()
 {
     if(ppu_bus.address_ >= 0x3F00)
     {
-        struct peripheral
-            *this = &ppu_peripheral_palette;
         uint16_t
-            address = this->bus_->address_ & this->mirror_mask_ - this->address_min_;
-        address &= 0x1F;
+            address = ppu_bus.address_ & 0x1F;
         address -=  0x0010 * !((bool)(address & 0b00011)) * ((bool) (address & 0b10000));
-        this->bus_->data_ = this->memory_[address];
+        ppu_bus.data_ = palette_mem[address];
     }
     else
     {
-        struct peripheral
-            *this = &ppu_peripheral_nametable;
         uint16_t
-            address = this->bus_->address_;
+            address = ppu_bus.address_;
         bool
             ntable_id;
 
         address &= 0x0FFF;
         ntable_id = 0;
-        ntable_id += header.ver_mirror * ((bool) (address & 0x0400));
-        ntable_id += (1 - header.ver_mirror) * ((bool) (address & 0x0800));
+        ntable_id += header.ver_mirror_ * ((bool) (address & 0x0400));
+        ntable_id += (1 - header.ver_mirror_) * ((bool) (address & 0x0800));
 
         address &= 0x03FF;
         uint8_t
             data = nametable_mem[ntable_id][address];
-        this->bus_->data_ = data;
+        ppu_bus.data_ = data;
     }
 }
 
@@ -49,57 +45,26 @@ void ntable_write()
 {
     if(ppu_bus.address_ >= 0x3F00)
     {
-        struct peripheral
-            *this = &ppu_peripheral_palette;
         uint16_t
-            address = this->bus_->address_ & this->mirror_mask_ - this->address_min_;
-        address &= 0x1F;
+            address = ppu_bus.address_ & 0x1F;
         address -=  0x0010 * !((bool)(address & 0b00011)) * ((bool) (address & 0b10000));
-        this->memory_[address] = this->bus_->data_;
+        palette_mem[address] = ppu_bus.data_;
     }
     else
     {
-        struct peripheral
-            *this = &ppu_peripheral_nametable;
         uint16_t
-            address = this->bus_->address_;
+            address = ppu_bus.address_;
         bool
             ntable_id;
 
         address &= 0x0FFF;
         ntable_id = 0;
-        ntable_id += header.ver_mirror * ((bool) (address & 0x0400));
-        ntable_id += (1 - header.ver_mirror) * ((bool) (address & 0x0800));
+        ntable_id += header.ver_mirror_ * ((bool) (address & 0x0400));
+        ntable_id += (1 - header.ver_mirror_) * ((bool) (address & 0x0800));
 
         address &= 0x03FF;
         uint8_t
-            data = this->bus_->data_;
+            data = ppu_bus.data_;
         nametable_mem[ntable_id][address] = data;
     }
 }
-
-struct peripheral
-    ppu_peripheral_nametable =
-{
-    .bus_ = &ppu_bus,
-    .address_min_ = 0x2000,
-    .address_max_ = 0x3EFF,
-    .mirror_mask_ = 0x23FF,
-    .memory_ = &nametable_mem[0],
-};
-
-
-static uint8_t
-    palette_mem[0x20];
-
-struct peripheral
-    ppu_peripheral_palette =
-    {
-            .address_max_   = 0x3FFF,
-            .address_min_   = 0x3F00,
-            .mirror_mask_   = 0x3F1F,
-            .memory_        = &palette_mem,
-            .bus_           = &ppu_bus,
-            .irq_line_      = 0,
-            .nmi_line_      = 0
-    };

@@ -10,8 +10,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "peripheral.h"
-
 
 struct ppu_2C0X
 {

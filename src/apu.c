@@ -5,7 +5,6 @@
  *      Author: David Jonsson
  */
 
-#include "peripherals.h"
 #include "apu.h"
 #include "cpu.h"
 
@@ -21,33 +20,19 @@ void apu_write()
     }
     else
     {
-        struct peripheral
-            *this = &cpu_peripheral_apu;
         uint16_t
-            address = this->bus_->address_ & this->mirror_mask_ - this->address_min_;
+            address = cpu_bus.address_ & 0x1F;
         if(address == 0x16)
             controller_state = controller_buffer;
     }
 }
 void apu_read()
 {
-    struct peripheral
-        *this = &cpu_peripheral_apu;
     uint16_t
-        address = this->bus_->address_ & this->mirror_mask_ - this->address_min_;
+        address = cpu_bus.address_ & 0x1F;
     if(address == 0x16)
     {
-        this->bus_->data_ = controller_state & 0b1;
+        cpu_bus.data_ = controller_state & 0b1;
         controller_state >>= 1;
     }
 }
-
-uint8_t apu_mem[0x1F + 1];
-struct peripheral cpu_peripheral_apu =
-{
-    .bus_ = &cpu_bus,
-    .address_min_ = 0x4000,
-    .address_max_ = 0x401F,
-    .mirror_mask_ = 0x401F,
-    .memory_ = &apu_mem,
-};

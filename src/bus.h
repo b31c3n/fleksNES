@@ -11,7 +11,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "peripheral.h"
 #include "ppu_constants.h"
 
 struct bus

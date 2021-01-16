@@ -8,6 +8,8 @@
 #ifndef SRC_APU_H_
 #define SRC_APU_H_
 
+#include <stdint.h>
+
 extern uint8_t
     controller_buffer;
 

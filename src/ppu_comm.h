@@ -12,8 +12,6 @@
 
 struct ppu_comm_
 {
-    struct peripheral
-        *ppu_;
     uint16_t
         address_;
     uint8_t

@@ -12,7 +12,6 @@
 #include "helper_funcs.h"
 #include "cpu.h"
 #include "ppu_comm.h"
-#include "peripherals.h"
 #include "config.h"
 
 void ppu_tick(void)
@@ -176,24 +175,27 @@ static void shift_bg()
 {
     if(ppu.regs_[PPU_MASK] & (PPU_MASK_SHOW_BACKGROUNND))
     {
-        ppu.shift_attr_lo_ <<= 1;
-        ppu.shift_attr_hi_ <<= 1;
-        ppu.shift_pattern_lo_ <<= 1;
-        ppu.shift_pattern_hi_ <<= 1;
+        uint64_t
+            *shift_regs = &ppu.shift_attr_hi_;
+        *shift_regs &= ~0x8000800080008000;
+        *shift_regs <<= 1;
     }
 }
 
 static void shift_fg()
 {
-    if(ppu.regs_[PPU_MASK] & (PPU_MASK_SHOW_SPRITE))
+    bool
+        shift = (ppu.regs_[PPU_MASK] & (PPU_MASK_SHOW_SPRITE));
+    shift = 1;
+    if(ppu.regs_[PPU_MASK] & (PPU_MASK_SHOW_BACKGROUNND))
     {
         for(uint8_t sprite_nr = 0; sprite_nr < 8; ++sprite_nr)
         {
             bool
                 x_positive = ppu.oam_sec_[sprite_nr * 4 + OAM_X];
-            ppu.oam_sec_[sprite_nr * 4 + OAM_X] -= x_positive;
-            ppu.sprite_shifters_lo_[sprite_nr] <<= 1 - x_positive;
-            ppu.sprite_shifters_hi_[sprite_nr] <<= 1 - x_positive;
+            ppu.oam_sec_[sprite_nr * 4 + OAM_X] -= x_positive & shift;
+            ppu.sprite_shifters_lo_[sprite_nr] <<= (1 - x_positive) & shift;
+            ppu.sprite_shifters_hi_[sprite_nr] <<= (1 - x_positive) & shift;
         }
     }
 }
@@ -212,7 +214,7 @@ void ppu_run(void)
     ppu.cycle_		%= 341,
     ppu.scanline_ 	+= 1 - (bool) ppu.cycle_,
     ppu.scanline_ 	%= 262,
-    ppu.frame_      += !ppu.scanline_ && !ppu.cycle_ ? 1 : 0;
+    ppu.frame_      += 1 - ((bool) ppu.scanline_ | (bool) ppu.cycle_);
 
     /*
      * Pre-render scanline (-1 or 261)
@@ -521,18 +523,18 @@ void ppu_run(void)
 }
 
 void ppu_write()
-{
-    ppu_comm.address_ =
-            ppu_comm.ppu_->bus_->address_ & ppu_comm.ppu_->mirror_mask_ - ppu_comm.ppu_->address_min_;
+
+{    ppu_comm.address_ =
+        cpu_bus.address_ & 0x7;
     ppu_comm.reg_ = 1 << ppu_comm.address_,
-    ppu_comm.data_ = ppu_comm.ppu_->bus_->data_;
+    ppu_comm.data_ = cpu_bus.data_;
     ppu_comm.write_funcs[ppu_comm.address_]();
 }
 
 void ppu_read()
 {
     ppu_comm.address_ =
-            ppu_comm.ppu_->bus_->address_ & ppu_comm.ppu_->mirror_mask_ - ppu_comm.ppu_->address_min_;
+           cpu_bus.address_ & 0x7;
     ppu_comm.reg_= 1 << ppu_comm.address_;
     ppu_comm.read_funcs[ppu_comm.address_]();
 }
@@ -542,13 +544,4 @@ struct ppu_2C0X ppu =
         .latch_             = false,
         .scanline_          = 261,
         .cycle_             = 0,
-};
-
-struct peripheral cpu_peripheral_ppu =
-{
-        .bus_ = &cpu_bus,
-        .address_min_ = 0x2000,
-        .address_max_ = 0x3FFF,
-        .mirror_mask_ = 0x2007,
-        .memory_ = &ppu.regs_,
 };

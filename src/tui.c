@@ -10,7 +10,6 @@
 #include <stdint.h>
 
 #include "tui.h"
-#include "peripherals.h"
 #include "cpu.h"
 #include "bus.h"
 #include "ppu.h"
@@ -19,7 +18,6 @@
 
 void tui_init()
 {
-
     initscr();
     cbreak();
     keypad(stdscr, TRUE);
@@ -165,88 +163,6 @@ void prgrom_init(void *this)
 {
     tui_prgrom = this;
 }
-
-///**
-// * CPU
-// */
-//static struct tui_comp
-//    *tui_cpu = NULL;
-//static struct c6502
-//    *per_cpu = NULL;
-//
-//void tui_cpu_update()
-//{
-//    static char flags[9] = "23456789\n";
-//    for(uint8_t i = 0, j = 7; i < 8; ++i, --j)
-//    {
-//        flags[j] = (uint8_t) pow(2,i) & per_cpu->status_ ? '1' : '0';
-//    }
-//    wmove(tui_cpu->window_, 0, 0);
-//    wprintw(tui_cpu->window_, "NO-BDIZC\n");
-//    wprintw(tui_cpu->window_, "%s\n", flags);
-//
-//    wmove(tui_cpu->window_, 2, 0);
-//    wprintw(tui_cpu->window_, "A: %02x", per_cpu->accumulator_);
-//    wmove(tui_cpu->window_, 2, 15);
-//    wprintw(tui_cpu->window_, "X: %02x", per_cpu->x_);
-//    wmove(tui_cpu->window_, 2, 30);
-//    wprintw(tui_cpu->window_, "Y: %02x", per_cpu->y_);
-//
-//    wmove(tui_cpu->window_, 0, 15);
-//    wprintw(tui_cpu->window_, "SP: %04x\n", per_cpu->stack_pointer_);
-//    wmove(tui_cpu->window_, 1, 15);
-//    wprintw(tui_cpu->window_, "PC: %04x\n", per_cpu->program_counter_);
-//    wmove(tui_cpu->window_, 0, 30);
-//    wprintw(tui_cpu->window_, "INST: %02x\n", per_cpu->opcode_);
-//    wmove(tui_cpu->window_, 1, 30);
-//    wprintw(tui_cpu->window_, "ADDR: %04x\n", per_cpu->opcode_args_);
-//}
-//
-//void tui_cpu_init(void *this)
-//{
-//    tui_cpu = this;
-//    per_cpu = tui_cpu->component_;
-//}
-//
-///**
-// * Cpu bus
-// */
-//static struct tui_comp
-//    *tui_cpubus = NULL;
-//static struct bus
-//    *per_cpubus = NULL;
-//
-//void tui_cpubus_update()
-//{
-//    wmove(tui_cpubus->window_, 0, 0);
-//    //wprintw(tui_cpubus->window_, "CpubusWr: %i", per_cpubus->write_);
-//    wmove(tui_cpubus->window_, 0, 15);
-//    wprintw(tui_cpubus->window_, "DATA: %02x", per_cpubus->data_);
-//    wmove(tui_cpubus->window_, 0, 30);
-//    wprintw(tui_cpubus->window_, "ADDR: %04x", per_cpubus->address_);
-//}
-//
-//void tui_cpubus_init(void *this)
-//{
-//    tui_cpubus = this;
-//    per_cpubus = tui_cpubus->component_;
-//}
-//
-///**
-// * Commandline
-// */
-//static struct tui_comp
-//    *tui_commandline = NULL;
-//
-//void tui_commandline_update()
-//{
-//
-//}
-//
-//void tui_commandline_init(void *this)
-//{
-//    tui_commandline = this;
-//}
 
 
 /**
