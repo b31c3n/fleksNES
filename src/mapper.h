@@ -20,6 +20,11 @@ extern uint8_t
 void mapper_init(char *file_name);
 void mapper_destroy();
 
+#define MAPPER_MIRROR_1SCREEN_LO 0
+#define MAPPER_MIRROR_1SRCEEN_HI 1
+#define MAPPER_MIRROR_VERTICAL   2
+#define MAPPER_MIRROR_HORIZONTAL 3
+
 struct ines_header
 {
     char
@@ -28,10 +33,11 @@ struct ines_header
         prgrom_size_,
         chrrom_size_,
         flags_[5],
-        padding_[5];
+        padding_[5],
+        mapper_ctr_mirror_;
     uint16_t
         mapper_nr_;
-    bool
+    uint8_t
     	ver_mirror_;
     FILE
         *file_;

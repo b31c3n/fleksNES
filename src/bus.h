@@ -18,7 +18,8 @@ struct bus
     uint8_t
         data_;
     uint16_t
-        address_;
+        address_,
+        interval_;
     void
         (*write[8]) (),
         (*read[8]) (),

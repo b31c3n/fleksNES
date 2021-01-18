@@ -335,9 +335,12 @@ void ppu_run(void)
                         pixel_hi = ppu.sprite_shifters_hi_[sprite_nr] & 0x80;
                     fg_pixel = pixel_lo | (pixel_hi << 1);
                     fg_pixel *= x_zero;
-                    fg_palette = ppu.oam_sec_[sprite_nr * 4 + OAM_ATTR] + 0x04;
 
-                    fg_prio = 1 - (bool) (ppu.oam_sec_[sprite_nr * 4 + OAM_ATTR] & 0x20);
+                    uint8_t
+                        attr = ppu.oam_sec_[(sprite_nr << 2) + OAM_ATTR];
+                    fg_palette = attr + 0x04;
+
+                    fg_prio = 1 - (bool) (attr & 0x20);
 
                     zero_sprite_rendered = 1 - (bool) sprite_nr;
                     if(fg_pixel)
@@ -523,9 +526,8 @@ void ppu_run(void)
 }
 
 void ppu_write()
-
-{    ppu_comm.address_ =
-        cpu_bus.address_ & 0x7;
+{
+    ppu_comm.address_ = cpu_bus.address_ & 0x7;
     ppu_comm.reg_ = 1 << ppu_comm.address_,
     ppu_comm.data_ = cpu_bus.data_;
     ppu_comm.write_funcs[ppu_comm.address_]();
@@ -533,8 +535,7 @@ void ppu_write()
 
 void ppu_read()
 {
-    ppu_comm.address_ =
-           cpu_bus.address_ & 0x7;
+    ppu_comm.address_ = cpu_bus.address_ & 0x7;
     ppu_comm.reg_= 1 << ppu_comm.address_;
     ppu_comm.read_funcs[ppu_comm.address_]();
 }

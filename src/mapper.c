@@ -14,7 +14,16 @@
  * 16 byte header
  */
 struct ines_header
-	header;
+	header =
+	        {
+	                .mapper_ctr_mirror_ = 0,
+	        };
+
+
+uint8_t
+    *prg_rom,
+    *prg_ram,
+    *chr_rom;
 
 void mapper_init(char *file_name)
 {
@@ -42,6 +51,7 @@ void mapper_init(char *file_name)
     header.mapper_nr_ = ((header.flags_[0] & 0xF0) >> 4) | (header.flags_[1] & 0xF0);
 
     if(header.mapper_nr_ == 0) mapper000_init();
+    else if(header.mapper_nr_ == 1) mapper001_init();
     else exit(1);
 
     fclose(header.file_);

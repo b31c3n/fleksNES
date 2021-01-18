@@ -17,37 +17,33 @@ static size_t
     prg_size,
     chr_size;
 
-uint8_t
-    *prg_rom,
-    *prg_ram,
-    *chr_rom;
 
-void mapper000_write_prgram()
+static void write_prgram()
 {
     uint16_t
         address = cpu_bus.address_ & 0x1FFF;
     prg_ram[address] = cpu_bus.data_;
 }
 
-void mapper000_read_prgram()
+static void read_prgram()
 {
     uint16_t
         address = cpu_bus.address_  & 0x1FFF;
     cpu_bus.data_ = prg_ram[address];
 }
 
-void mapper000_write_prgrom(){}
+static void write_prgrom(){}
 
-void mapper000_read_prgrom()
+static void read_prgrom()
 {
     uint16_t
         address = cpu_bus.address_ & (0x4000 * header.prgrom_size_ - 1);
     cpu_bus.data_ = prg_rom[address];
 }
 
-void mapper000_write_chrrom(){}
+static void write_chrrom(){}
 
-void mapper000_read_chrrom()
+static void read_chrrom()
 {
     uint16_t
         address = ppu_bus.address_;
@@ -56,20 +52,22 @@ void mapper000_read_chrrom()
 
 void mapper000_init()
 {
-    cpu_bus.read[3] = mapper000_read_prgram,
-    cpu_bus.read[4] = mapper000_read_prgrom,
-    cpu_bus.read[5] = mapper000_read_prgrom,
-    cpu_bus.read[6] = mapper000_read_prgrom,
-    cpu_bus.read[7] = mapper000_read_prgrom,
+    cpu_bus.read[3] = read_prgram,
+    cpu_bus.read[4] = read_prgrom,
+    cpu_bus.read[5] = read_prgrom,
+    cpu_bus.read[6] = read_prgrom,
+    cpu_bus.read[7] = read_prgrom,
 
-    cpu_bus.write[3] = mapper000_write_prgram,
-    cpu_bus.write[4] = mapper000_write_prgrom,
-    cpu_bus.write[5] = mapper000_write_prgrom,
-    cpu_bus.write[6] = mapper000_write_prgrom,
-    cpu_bus.write[7] = mapper000_write_prgrom;
+    cpu_bus.write[3] = write_prgram,
+    cpu_bus.write[4] = write_prgrom,
+    cpu_bus.write[5] = write_prgrom,
+    cpu_bus.write[6] = write_prgrom,
+    cpu_bus.write[7] = write_prgrom;
 
-    ppu_bus.read[0] = mapper000_read_chrrom,
-    ppu_bus.write[0] = mapper000_write_chrrom;
+    ppu_bus.read[0] = read_chrrom,
+    ppu_bus.read[1] = read_chrrom,
+    ppu_bus.write[0] = write_chrrom,
+    ppu_bus.write[1] = write_chrrom;
 
     prg_size = 0x4000 * header.prgrom_size_,
     chr_size = 0x2000 * header.chrrom_size_;
