@@ -9,9 +9,7 @@
 #define SRC_NAMETABLE_H_
 
 extern uint8_t
-    nametable_mem[2][1024];
-
-void ntable_read();
-void ntable_write();
+    **ntable_mem,
+    *pal_mem;
 
 #endif /* SRC_NAMETABLE_H_ */

@@ -116,7 +116,7 @@ void ntable_update()
         wprintw(tui_ntable->window_, "\n%04x ",i);
         for(uint8_t j = 0; j <= 0xF; ++j)
         {
-            uint8_t data = nametable_mem[1][i + j];
+            uint8_t data = ntable_mem[1][i + j];
             wprintw(tui_ntable->window_, "%02x ", data);
         }
     }

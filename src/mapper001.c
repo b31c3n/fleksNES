@@ -10,8 +10,13 @@
 
 #include "mapper000.h"
 #include "mapper.h"
+#include "nametable.h"
 #include "bus.h"
 #include "cpu.h"
+
+static uint8_t
+    nametable_mem[2][1024],
+    palette_mem[0x20];
 
 static size_t
     prg_size,
@@ -22,9 +27,9 @@ static uint8_t
     shift_bits  = 0,
     prg_bank    = 0,
     chr_bank0   = 0,
-    chr_bank1   = 0,
+    chr_bank1   = 1,
     prg_mode    = 3,
-    chr_mode    = 1,
+    chr_mode    = 0,
     internal_regs[4] = {0};
 
 
@@ -45,8 +50,25 @@ static uint16_t
     reg_select  = 0,
     prg0_offset = 0,
     prg1_offset = 0x4000,
-    chr0_offset = 0,
-    chr1_offset = 0x1000;
+    chr0_offset = 0x1000 * 0,
+    chr1_offset = 0x1000 * 1;
+
+static bool
+    reset = 0;
+static void shift()
+{
+    shift_reg |= (cpu_bus.data_ & 0x1) << shift_bits;
+    ++shift_bits;
+
+    reset = shift_bits == 5;
+    if(cpu_bus.data_ & 0x80)
+    {
+        shift_reg       = 0,
+        shift_bits      = 0,
+        reset           = 0,
+        prg1_offset     = 0x4000 * (header.prgrom_size_ - 1);
+    }
+}
 
 static void write_prgram()
 {
@@ -64,36 +86,32 @@ static void read_prgram()
 
 static void write_prgrom_8000()
 {
-    shift_reg |= (cpu_bus.data_ & 0x1) << shift_bits;
-    ++shift_bits;
-    bool
-        reset = 1 -  (bool) shift_bits & 5;
-
+    shift();
     if(reset)
     {
         header.mapper_ctr_mirror_ = shift_reg & 0b11;
         prg_mode = shift_reg & 0b01100,
         chr_mode = shift_reg & 0b10000;
 
-        if(!(prg_mode & 0b10))
-        {
-            prg0_offset = 0x0000,
-            prg1_offset = 0x4000;
-        }
-        else if(prg_mode & 0b01)
-        {
-            prg0_offset = 0x0000,
-            prg1_offset = 0x4000;
-        }
-        else
-        {
-            prg0_offset = 0x0000,
-            prg1_offset = 0x4000;
-        }
-        if(chr_mode)
-        {
-
-        }
+//        if(!(prg_mode & 0b10))
+//        {
+//            prg0_offset = 0x0000,
+//            prg1_offset = 0x4000;
+//        }
+//        else if(prg_mode & 0b01)
+//        {
+//            prg0_offset = 0x0000,
+//            prg1_offset = 0x4000;
+//        }
+//        else
+//        {
+//            prg0_offset = 0x0000,
+//            prg1_offset = 0x4000;
+//        }
+//        if(chr_mode)
+//        {
+//
+//        }
         shift_reg  = 0;
         shift_bits = 0;
     }
@@ -101,20 +119,16 @@ static void write_prgrom_8000()
 
 static void write_prgrom_A000()
 {
-    shift_reg |= (cpu_bus.data_ & 0x1) << shift_bits;
-    ++shift_bits;
-    bool
-        reset = 1 -  (bool) shift_bits & 5;
-
+    shift();
     if(reset)
     {
-        chr_bank0 = internal_regs[MAPPER001_CHR0];
+        chr_bank0 = shift_reg;//internal_regs[MAPPER001_CHR0];
         if(chr_mode)
             chr0_offset = 0x0000 + 0x1000 * chr_bank0;
         else
         {
-            chr0_offset = 0x0000 + 0x1000 * chr_bank0;
-            chr1_offset = 0x1000 + 0x1000 * chr_bank0;
+            chr0_offset = 0x0000 + 0x1000 * (chr_bank0 & 0b11110);
+            chr1_offset = 0x0000 + 0x1000 * (chr_bank0 & 0b11110);
         }
 
         shift_reg  = 0;
@@ -124,16 +138,12 @@ static void write_prgrom_A000()
 
 static void write_prgrom_C000()
 {
-    shift_reg |= (cpu_bus.data_ & 0x1) << shift_bits;
-    ++shift_bits;
-    bool
-        reset = 1 -  (bool) shift_bits & 5;
-
+    shift();
     if(reset)
     {
-        chr_bank1 = internal_regs[MAPPER001_CHR0];
+        chr_bank1 = shift_reg; //internal_regs[MAPPER001_CHR0];
         if(chr_mode)
-            chr1_offset = 0x1000 + 0x1000 * chr_bank1;
+            chr1_offset = 0x0000 + 0x1000 * chr_bank1;
 
         shift_reg  = 0;
         shift_bits = 0;
@@ -143,14 +153,10 @@ static void write_prgrom_C000()
 
 static void write_prgrom_E000()
 {
-    shift_reg |= (cpu_bus.data_ & 0x1) << shift_bits;
-    ++shift_bits;
-    bool
-        reset = 1 -  (bool) shift_bits & 5;
-
+    shift();
     if(reset)
     {
-        prg_bank = internal_regs[MAPPER001_PRG]  & 0b01110;
+        prg_bank = shift_reg & 0b01111; //internal_regs[MAPPER001_PRG]  & 0b01111;
         if(!(prg_mode & 0b10))
         {
             prg0_offset = 0x0000 + 0x8000 * prg_bank,
@@ -202,8 +208,69 @@ static void read_chrrom1000()
     ppu_bus.data_ = chr_rom[address];
 }
 
+static void ntable_read()
+{
+    if(ppu_bus.address_ >= 0x3F00)
+    {
+        uint16_t
+            address = ppu_bus.address_ & 0x1F;
+        address -=  0x0010 * !((bool)(address & 0b00011)) * ((bool) (address & 0b10000));
+        ppu_bus.data_ = palette_mem[address];
+    }
+    else
+    {
+        uint16_t
+            address = ppu_bus.address_;
+        bool
+            ntable_id;
+
+        address &= 0x0FFF;
+        ntable_id = 0;
+        ntable_id += header.ver_mirror_ * ((bool) (address & 0x0400));
+        ntable_id += (1 - header.ver_mirror_) * ((bool) (address & 0x0800));
+//        ntable_id = 1;
+
+        address &= 0x03FF;
+        uint8_t
+            data = nametable_mem[ntable_id][address];
+        ppu_bus.data_ = data;
+    }
+}
+
+static void ntable_write()
+{
+    if(ppu_bus.address_ >= 0x3F00)
+    {
+        uint16_t
+            address = ppu_bus.address_ & 0x1F;
+        address -=  0x0010 * !((bool)(address & 0b00011)) * ((bool) (address & 0b10000));
+        palette_mem[address] = ppu_bus.data_;
+    }
+    else
+    {
+        uint16_t
+            address = ppu_bus.address_;
+        bool
+            ntable_id;
+
+        address &= 0x0FFF;
+        ntable_id = 0;
+        ntable_id += header.ver_mirror_ * ((bool) (address & 0x0400));
+        ntable_id += (1 - header.ver_mirror_) * ((bool) (address & 0x0800));
+        //ntable_id = 1;
+
+        address &= 0x03FF;
+        uint8_t
+            data = ppu_bus.data_;
+        nametable_mem[ntable_id][address] = data;
+    }
+}
+
 void mapper001_init()
 {
+    ntable_mem = nametable_mem;
+    pal_mem = palette_mem;
+
     cpu_bus.read[3] = read_prgram,
     cpu_bus.read[4] = read_prgrom_8000,
     cpu_bus.read[5] = read_prgrom_8000,
@@ -218,8 +285,12 @@ void mapper001_init()
 
     ppu_bus.read[0] = read_chrrom0000,
     ppu_bus.read[1] = read_chrrom1000,
-    ppu_bus.write[0] = write_chrrom;
-    ppu_bus.write[1] = write_chrrom;
+    ppu_bus.read[2] = ntable_read,
+    ppu_bus.read[3] = ntable_read,
+    ppu_bus.write[0] = write_chrrom,
+    ppu_bus.write[1] = write_chrrom,
+    ppu_bus.write[2] = ntable_write,
+    ppu_bus.write[3] = ntable_write;
 
     prg_size = 0x4000 * header.prgrom_size_,
     chr_size = 0x2000 * header.chrrom_size_;

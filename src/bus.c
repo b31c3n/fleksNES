@@ -36,20 +36,6 @@ struct bus
     ppu_bus =
     {
             .interval_ = 0x1000,
-            .write =
-            {
-                    0,
-                    0,
-                    ntable_write,
-                    ntable_write,
-            },
-            .read =
-            {
-                    0,
-                    0,
-                    ntable_read,
-                    ntable_read,
-            },
             .ticker = ppu_tick
     };
 

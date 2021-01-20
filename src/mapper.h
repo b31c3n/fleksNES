@@ -20,10 +20,10 @@ extern uint8_t
 void mapper_init(char *file_name);
 void mapper_destroy();
 
-#define MAPPER_MIRROR_1SCREEN_LO 0
-#define MAPPER_MIRROR_1SRCEEN_HI 1
-#define MAPPER_MIRROR_VERTICAL   2
-#define MAPPER_MIRROR_HORIZONTAL 3
+#define MIRROR_1SCREEN_LO 0
+#define MIRROR_1SRCEEN_HI 1
+#define MIRROR_VERTICAL   2
+#define MIRROR_HORIZONTAL 3
 
 struct ines_header
 {
