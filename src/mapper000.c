@@ -77,7 +77,6 @@ static void ntable_read()
         ntable_id = 0;
         ntable_id += header.ver_mirror_ * ((bool) (address & 0x0400));
         ntable_id += (1 - header.ver_mirror_) * ((bool) (address & 0x0800));
-//        ntable_id = 1;
 
         address &= 0x03FF;
         uint8_t
@@ -106,7 +105,6 @@ static void ntable_write()
         ntable_id = 0;
         ntable_id += header.ver_mirror_ * ((bool) (address & 0x0400));
         ntable_id += (1 - header.ver_mirror_) * ((bool) (address & 0x0800));
-        //ntable_id = 1;
 
         address &= 0x03FF;
         uint8_t

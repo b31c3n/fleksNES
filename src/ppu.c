@@ -282,7 +282,6 @@ void ppu_run(void)
         if(ppu.cycle_ >= 1 && ppu.cycle_ <= 256)
         {
             shift_bg();
-            shift_fg();
             tile_funcs[(ppu.cycle_ - 1) % 8]();
 
             if(ppu.cycle_ == 256) inc_y();
@@ -393,6 +392,8 @@ void ppu_run(void)
             zero_hit = (1 - left_most_render) & zero_hit & ppu.zero_hit_possible_;
             ppu.regs_[PPU_STATUS] |= zero_hit << 6;
             ppu.zero_hit_possible_ -= zero_hit;
+            shift_fg();
+
         }
 
         else if(ppu.cycle_ >= 321 && ppu.cycle_ <= 336)

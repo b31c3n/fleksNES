@@ -25,12 +25,12 @@ static size_t
 static uint8_t
     shift_reg   = 0,
     shift_bits  = 0,
+    ctrl_reg    = 0,
     prg_bank    = 0,
     chr_bank0   = 0,
-    chr_bank1   = 1,
-    prg_mode    = 3,
-    chr_mode    = 0,
-    internal_regs[4] = {0};
+    chr_bank1   = 1;
+//    prg_mode    = 3,
+//    chr_mode    = 0;
 
 
 #define MAPPER001_CTRL  0
@@ -47,14 +47,15 @@ static uint8_t
 #define MAPPER001_CHR_MODE3 3
 
 static uint16_t
-    reg_select  = 0,
+    reg_select  = 0;
     prg0_offset = 0,
     prg1_offset = 0x4000,
     chr0_offset = 0x1000 * 0,
     chr1_offset = 0x1000 * 1;
 
 static bool
-    reset = 0;
+    reset = 0,
+    write = 1;
 static void shift()
 {
     shift_reg |= (cpu_bus.data_ & 0x1) << shift_bits;
@@ -66,6 +67,7 @@ static void shift()
         shift_reg       = 0,
         shift_bits      = 0,
         reset           = 0,
+        ctrl_reg        |= 0x0C,
         prg1_offset     = 0x4000 * (header.prgrom_size_ - 1);
     }
 }
@@ -89,29 +91,30 @@ static void write_prgrom_8000()
     shift();
     if(reset)
     {
-        header.mapper_ctr_mirror_ = shift_reg & 0b11;
-        prg_mode = shift_reg & 0b01100,
+        ctrl_reg = shift_reg & 0b11111;
+        uint8_t prg_mode = shift_reg & 0b01100,
         chr_mode = shift_reg & 0b10000;
 
-//        if(!(prg_mode & 0b10))
-//        {
-//            prg0_offset = 0x0000,
-//            prg1_offset = 0x4000;
-//        }
-//        else if(prg_mode & 0b01)
-//        {
-//            prg0_offset = 0x0000,
-//            prg1_offset = 0x4000;
-//        }
-//        else
-//        {
-//            prg0_offset = 0x0000,
-//            prg1_offset = 0x4000;
-//        }
-//        if(chr_mode)
-//        {
-//
-//        }
+        prg_bank = shift_reg & 0b01111;
+        if(!(ctrl_reg & 0b10))
+        {
+            prg0_offset = 0x8000 * (prg_bank & 0b01110),
+            prg1_offset = 0x4000 + 0x8000 * (prg_bank & 0b01110);
+        }
+        else if(ctrl_reg & 0b01)
+        {
+            prg0_offset = 0x4000 * prg_bank;
+            prg1_offset = 0x4000 * (header.prgrom_size_ - 1);
+        }
+        else
+        {
+            prg0_offset = 0x0000,
+            prg1_offset = 0x4000 * prg_bank;
+        }
+        if(chr_mode)
+        {
+
+        }
         shift_reg  = 0;
         shift_bits = 0;
     }
@@ -122,13 +125,13 @@ static void write_prgrom_A000()
     shift();
     if(reset)
     {
-        chr_bank0 = shift_reg;//internal_regs[MAPPER001_CHR0];
-        if(chr_mode)
+        chr_bank0 = shift_reg;
+        if(ctrl_reg & 0b10000)
             chr0_offset = 0x0000 + 0x1000 * chr_bank0;
         else
         {
-            chr0_offset = 0x0000 + 0x1000 * (chr_bank0 & 0b11110);
-            chr1_offset = 0x0000 + 0x1000 * (chr_bank0 & 0b11110);
+            chr0_offset = 0x2000 * (chr_bank0 & 0b11110);
+            chr1_offset = 0x1000 + 0x2000 * (chr_bank0 & 0b11110);
         }
 
         shift_reg  = 0;
@@ -141,13 +144,12 @@ static void write_prgrom_C000()
     shift();
     if(reset)
     {
-        chr_bank1 = shift_reg; //internal_regs[MAPPER001_CHR0];
-        if(chr_mode)
-            chr1_offset = 0x0000 + 0x1000 * chr_bank1;
+        chr_bank1 = shift_reg;
+        if(ctrl_reg & 0b10000)
+            chr1_offset = 0x1000 * chr_bank1;
 
         shift_reg  = 0;
         shift_bits = 0;
-
     }
 }
 
@@ -156,25 +158,24 @@ static void write_prgrom_E000()
     shift();
     if(reset)
     {
-        prg_bank = shift_reg & 0b01111; //internal_regs[MAPPER001_PRG]  & 0b01111;
-        if(!(prg_mode & 0b10))
+        prg_bank = shift_reg & 0b01111;
+        if(!(ctrl_reg & 0b10))
         {
-            prg0_offset = 0x0000 + 0x8000 * prg_bank,
-            prg1_offset = 0x4000 + 0x8000 * prg_bank;
+            prg0_offset = 0x8000 * (prg_bank & 0b01110),
+            prg1_offset = 0x4000 + 0x8000 * (prg_bank & 0b01110);
         }
-        else if(prg_mode & 0b01)
+        else if(ctrl_reg & 0b01)
         {
-            prg0_offset = 0x0000 + 0x4000 * prg_bank;
-            prg1_offset = 0x4000;
+            prg0_offset = 0x4000 * prg_bank;
+            prg1_offset = 0x4000 * (header.prgrom_size_ - 1);
         }
         else
         {
             prg0_offset = 0x0000,
-            prg1_offset = 0x4000 + 0x4000 * prg_bank;
+            prg1_offset = 0x4000 * prg_bank;
         }
         shift_reg  = 0;
         shift_bits = 0;
-
     }
 }
 
@@ -204,7 +205,7 @@ static void read_chrrom0000()
 static void read_chrrom1000()
 {
     uint16_t
-        address = ppu_bus.address_ & 0x0fff + chr1_offset;
+        address = (ppu_bus.address_ & 0x0fff) + chr1_offset;
     ppu_bus.data_ = chr_rom[address];
 }
 
@@ -228,7 +229,7 @@ static void ntable_read()
         ntable_id = 0;
         ntable_id += header.ver_mirror_ * ((bool) (address & 0x0400));
         ntable_id += (1 - header.ver_mirror_) * ((bool) (address & 0x0800));
-//        ntable_id = 1;
+        ntable_id = ctrl_reg & 0b1;
 
         address &= 0x03FF;
         uint8_t
@@ -257,7 +258,7 @@ static void ntable_write()
         ntable_id = 0;
         ntable_id += header.ver_mirror_ * ((bool) (address & 0x0400));
         ntable_id += (1 - header.ver_mirror_) * ((bool) (address & 0x0800));
-        //ntable_id = 1;
+        ntable_id = ctrl_reg & 0b1;
 
         address &= 0x03FF;
         uint8_t
