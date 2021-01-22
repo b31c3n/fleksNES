@@ -392,8 +392,11 @@ void ppu_run(void)
             zero_hit = (1 - left_most_render) & zero_hit & ppu.zero_hit_possible_;
             ppu.regs_[PPU_STATUS] |= zero_hit << 6;
             ppu.zero_hit_possible_ -= zero_hit;
-            shift_fg();
 
+            /**
+             * Needed to shift sprites here to match with background
+             */
+            shift_fg();
         }
 
         else if(ppu.cycle_ >= 321 && ppu.cycle_ <= 336)
@@ -529,7 +532,7 @@ void ppu_run(void)
 void ppu_write()
 {
     ppu_comm.address_ = cpu_bus.address_ & 0x7;
-    ppu_comm.reg_ = 1 << ppu_comm.address_,
+//    ppu_comm.reg_ = 1 << ppu_comm.address_,
     ppu_comm.data_ = cpu_bus.data_;
     ppu_comm.write_funcs[ppu_comm.address_]();
 }
@@ -537,7 +540,7 @@ void ppu_write()
 void ppu_read()
 {
     ppu_comm.address_ = cpu_bus.address_ & 0x7;
-    ppu_comm.reg_= 1 << ppu_comm.address_;
+//    ppu_comm.reg_= 1 << ppu_comm.address_;
     ppu_comm.read_funcs[ppu_comm.address_]();
 }
 

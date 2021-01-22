@@ -15,7 +15,7 @@ struct ppu_comm_
     uint16_t
         address_;
     uint8_t
-        reg_,
+//        reg_,
         data_;
     void
         (*write_funcs[8]) (),

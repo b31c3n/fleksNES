@@ -15,7 +15,8 @@
 #include "bus.h"
 #include "config.h"
 
-bool shutdown = 0;
+bool shutdown   = 0;
+bool pause      = 0;
 
 struct c6502 cpu =
 {
@@ -103,6 +104,8 @@ void cpu_run()
     while(!shutdown)
     {
         cpu.status_ |= CPU_STATUS_NOT_USED;
+
+        while(pause);
 
         if(cpu.suspend_etc_ & CPU_DMA)
         {
