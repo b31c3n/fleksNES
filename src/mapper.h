@@ -44,5 +44,7 @@ struct ines_header
 
 } extern header;
 
-
+extern void
+    (*mapper_load_state)(FILE *),
+    (*mapper_save_state)(FILE *);
 #endif /* SRC_MAPPER_H_ */

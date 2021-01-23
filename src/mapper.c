@@ -25,6 +25,7 @@ uint8_t
     *prg_ram,
     *chr_rom;
 
+
 void mapper_init(char *file_name)
 {
     header.file_ = fopen(file_name, "r");
@@ -62,5 +63,11 @@ void mapper_destroy()
     free(prg_rom);
     free(chr_rom);
 }
+
+static void temp(FILE *fp) {}
+
+void
+   (*mapper_load_state)(FILE *) = temp,
+   (*mapper_save_state)(FILE *) = temp;
 
 

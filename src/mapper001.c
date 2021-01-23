@@ -74,6 +74,7 @@ static void shift()
     }
 }
 
+
 /**
  *
  * SEROM
@@ -81,7 +82,6 @@ static void shift()
  * tetris etc
  *
  */
-
 static void SEROM_cpuwrite_6000()
 {
     uint16_t
@@ -219,6 +219,7 @@ static void SEROM_ppuread_1000()
     ppu_bus.data_ = chr_rom[address];
 }
 
+
 /**
  *
  * SGROM
@@ -226,7 +227,6 @@ static void SEROM_ppuread_1000()
  * Megaman 2
  *
  */
-
 static void SGROM_cpuwrite_6000()
 {
     uint16_t
@@ -386,7 +386,6 @@ static void SGROM_ppuread_1000()
 /**
  * Name table
  */
-
 static void ntable_read()
 {
     if(ppu_bus.address_ >= 0x3F00)

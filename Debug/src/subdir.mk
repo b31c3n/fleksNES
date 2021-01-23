@@ -24,6 +24,7 @@ C_SRCS += \
 ../src/ppu.c \
 ../src/ppu_comm.c \
 ../src/ram.c \
+../src/state.c \
 ../src/tui.c 
 
 OBJS += \
@@ -47,6 +48,7 @@ OBJS += \
 ./src/ppu.o \
 ./src/ppu_comm.o \
 ./src/ram.o \
+./src/state.o \
 ./src/tui.o 
 
 C_DEPS += \
@@ -70,6 +72,7 @@ C_DEPS += \
 ./src/ppu.d \
 ./src/ppu_comm.d \
 ./src/ram.d \
+./src/state.d \
 ./src/tui.d 
 
 

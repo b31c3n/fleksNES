@@ -94,7 +94,6 @@ void cpu_execute_instruction()
 
 void cpu_tick()
 {
-    ++cpu.nr_ticks_;
     ppu_run(), ppu_run(), ppu_run();
     //clock_nanosleep(&nanosecs, NULL);
 }
@@ -151,7 +150,6 @@ void cpu_run()
 
             else
             {
-                ++cpu.nr_instructions;
                 struct _16_bit
                     old_counter = cpu.program_counter_;
                 cpu_fetch_instruction();
@@ -200,5 +198,43 @@ void cpu_load_instruction(int instruction)
     omp_set_lock(&writelock);
     temp_instruction = instruction;
     omp_unset_lock(&writelock);
+}
+
+/**
+    uint8_t
+        accumulator_,
+        x_,
+        y_,
+        status_,
+        opcode_,
+        suspend_etc_,
+        irq_,
+        nmi_;
+    struct _16_bit
+        program_counter_,
+        stack_pointer_,
+        opcode_args_,
+        adh_adl_;
+ */
+
+void cpu_load_state(FILE *fp)
+{
+    fread(&cpu, 8, 1, fp);
+    for(struct _16_bit *p = &cpu.program_counter_.word_;
+        p < &cpu.adh_adl_ + 1; ++p)
+    {
+        fread(&p->word_, 2, 1, fp);
+    }
+    fread(&cpu, 0x7FF, 1, fp);
+}
+void cpu_save_state(FILE *fp)
+{
+    fwrite(&cpu, 8, 1, fp);
+    for(struct _16_bit *p = &cpu.program_counter_.word_;
+        p < &cpu.adh_adl_ + 1; ++p)
+    {
+        fwrite(&p->word_, 2, 1, fp);
+    }
+    fwrite(&cpu, 0x7FF, 1, fp);
 }
 

@@ -36,6 +36,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
+
 #include "instruction.h"
 #include "bus.h"
 #include "16_bit.h"
@@ -52,13 +54,9 @@ struct c6502
         y_,
         status_,
         opcode_,
-        suspend_etc_;
-    uint16_t
+        suspend_etc_,
         irq_,
         nmi_;
-    uint64_t
-        nr_ticks_,
-        nr_instructions;
     struct _16_bit
         program_counter_,
         stack_pointer_,
@@ -71,6 +69,8 @@ void cpu_fetch_instruction();
 void cpu_execute_instruction();
 void cpu_tick();
 void cpu_run();
+void cpu_load_state(FILE *fp);
+void cpu_save_state(FILE *fp);
 
 /**
  * Synchronized
