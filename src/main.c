@@ -16,17 +16,16 @@
 #include "ppu.h"
 #include "config.h"
 
-
 void sigint(int signal)
 {
-    shutdown = 1;
+    cpu_shutdown = 1;
     tui_destroy();
     puts("Interrupted!");
 }
 
 void sigsegv(int signal)
 {
-    shutdown = 1;
+    cpu_shutdown = 1;
     tui_destroy();
     puts("Segfault!");
 }
@@ -43,6 +42,7 @@ int main(int argc, char **argv)
             log_clear();
             clock_init();
             mapper_init(argv[1]);
+
             cpu_run();
             mapper_destroy();
         }
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
         #pragma omp section
         {
             tui_init();
-            while(!shutdown)
+            while(!cpu_shutdown)
             {
                 tui_draw();
             }
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
         #pragma omp section
         {
             display_init();
-            while(!shutdown)
+            while(!cpu_shutdown)
             {
                 display_draw();
                 capture_events();

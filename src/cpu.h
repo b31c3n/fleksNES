@@ -43,8 +43,10 @@
 #include "16_bit.h"
 
 extern bool
-    shutdown,
-    pause;
+    cpu_shutdown,
+    cpu_pause,
+    cpu_save,
+    cpu_load;
 
 struct c6502
 {

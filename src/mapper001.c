@@ -452,10 +452,24 @@ static void ntable_write()
     }
 }
 
+void mapper001_load_state(FILE *fp)
+{
+    fread(nametable_mem, 2 * 1024, 1, fp);
+    fread(palette_mem, 0x20, 1, fp);
+}
+
+void mapper001_save_state(FILE *fp)
+{
+    fwrite(nametable_mem, 2 * 1024, 1, fp);
+    fwrite(palette_mem, 0x20, 1, fp);
+}
+
 void mapper001_init()
 {
     ntable_mem = nametable_mem;
     pal_mem = palette_mem;
+    mapper_save_state = mapper001_save_state;
+    mapper_load_state = mapper001_load_state;
 
     if(header.chrrom_size_)
     {

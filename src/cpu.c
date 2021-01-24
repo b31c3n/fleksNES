@@ -14,9 +14,13 @@
 #include "ppu.h"
 #include "bus.h"
 #include "config.h"
+#include "ram.h"
 
-bool shutdown   = 0;
-bool pause      = 0;
+bool
+    cpu_shutdown   = 0,
+    cpu_pause      = 0,
+    cpu_save       = 0,
+    cpu_load       = 0;
 
 struct c6502 cpu =
 {
@@ -100,11 +104,21 @@ void cpu_tick()
 
 void cpu_run()
 {
-    while(!shutdown)
+    while(!cpu_shutdown)
     {
         cpu.status_ |= CPU_STATUS_NOT_USED;
 
-        while(pause);
+        while(cpu_pause);
+        if(cpu_save)
+        {
+            save_state();
+            cpu_save = 0;
+        }
+        if(cpu_load)
+        {
+            load_state();
+            cpu_load = 0;
+        }
 
         if(cpu.suspend_etc_ & CPU_DMA)
         {
@@ -225,7 +239,8 @@ void cpu_load_state(FILE *fp)
     {
         fread(&p->word_, 2, 1, fp);
     }
-    fread(&cpu, 0x7FF, 1, fp);
+    fread(ram, 0x7FF, 1, fp);
+
 }
 void cpu_save_state(FILE *fp)
 {
@@ -235,6 +250,6 @@ void cpu_save_state(FILE *fp)
     {
         fwrite(&p->word_, 2, 1, fp);
     }
-    fwrite(&cpu, 0x7FF, 1, fp);
+    fwrite(ram, 0x7FF, 1, fp);
 }
 

@@ -26,9 +26,9 @@ void load_state(void)
 {
     FILE *fp = fopen("state.000", "r");
 
-    mapper_load_state(fp);
-    ppu_load_state(fp);
     cpu_load_state(fp);
+    ppu_load_state(fp);
+    mapper_load_state(fp);
 
     fclose(fp);
 }

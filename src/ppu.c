@@ -532,7 +532,6 @@ void ppu_run(void)
 void ppu_write()
 {
     ppu_comm.address_ = cpu_bus.address_ & 0x7;
-//    ppu_comm.reg_ = 1 << ppu_comm.address_,
     ppu_comm.data_ = cpu_bus.data_;
     ppu_comm.write_funcs[ppu_comm.address_]();
 }
@@ -540,7 +539,6 @@ void ppu_write()
 void ppu_read()
 {
     ppu_comm.address_ = cpu_bus.address_ & 0x7;
-//    ppu_comm.reg_= 1 << ppu_comm.address_;
     ppu_comm.read_funcs[ppu_comm.address_]();
 }
 
@@ -589,12 +587,12 @@ struct ppu_2C0X ppu =
 void ppu_load_state(FILE *fp)
 {
     fread(&ppu, sizeof(ppu), 1, fp);
-    ppu.oam_sec_p += ppu.oam_sec_;
+    ppu.oam_sec_p =  ppu.oam_sec_ + (uint32_t) ppu.oam_sec_p;
 }
 
 void ppu_save_state(FILE *fp)
 {
-    ppu.oam_sec_p -= ppu.oam_sec_;
+    ppu.oam_sec_p -= (uint32_t *) ppu.oam_sec_;
     fwrite(&ppu, sizeof(ppu), 1, fp);
-    ppu.oam_sec_p += ppu.oam_sec_;
+    ppu.oam_sec_p = ppu.oam_sec_ + (uint32_t) ppu.oam_sec_p;
 }

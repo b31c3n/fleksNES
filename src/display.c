@@ -100,7 +100,17 @@ void capture_events()
                 }
                 case SDLK_p :
                 {
-                    pause = 1 - pause;
+                    cpu_pause = 1 - cpu_pause;
+                    break;
+                }
+                case SDLK_F5 :
+                {
+                    cpu_save = 1;
+                    break;
+                }
+                case SDLK_F6 :
+                {
+                    cpu_load = 1;
                     break;
                 }
             }
