@@ -8,6 +8,7 @@ Debug/*
 Debug/src/*
 !Debug/src/subdir.mk
 
+state*
 perf*
 callgrind*
 logs/
