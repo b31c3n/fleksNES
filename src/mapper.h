@@ -12,11 +12,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-extern uint8_t
-    *prg_rom,
-    *prg_ram,
-    *chr_rom;
-
 void mapper_init(char *file_name);
 void mapper_destroy();
 
@@ -42,7 +37,7 @@ struct ines_header
     FILE
         *file_;
 
-} extern header;
+};
 
 extern void
     (*mapper_load_state)(FILE *),

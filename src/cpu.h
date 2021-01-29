@@ -65,7 +65,7 @@ struct c6502
         opcode_args_,
         adh_adl_;
 
-} extern cpu;
+};
 
 void cpu_fetch_instruction();
 void cpu_execute_instruction();

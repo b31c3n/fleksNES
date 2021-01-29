@@ -10,9 +10,9 @@
 #include "ppu.h"
 #include "clock.h"
 #include "helper_funcs.h"
-#include "cpu.h"
 #include "ppu_comm.h"
 #include "config.h"
+#include "refactoring.h"
 
 void ppu_tick(void)
 {
@@ -541,13 +541,6 @@ void ppu_read()
     ppu_comm.address_ = cpu_bus.address_ & 0x7;
     ppu_comm.read_funcs[ppu_comm.address_]();
 }
-
-struct ppu_2C0X ppu =
-{
-        .latch_             = false,
-        .scanline_          = 261,
-        .cycle_             = 0,
-};
 
 /*
     uint8_t

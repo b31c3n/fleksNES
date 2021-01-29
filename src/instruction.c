@@ -5,10 +5,8 @@
  *      Author: David Jonsson
  */
 #include "instruction.h"
-#include "cpu.h"
-#include "addr_modes.h"
 #include "16_bit.h"
-
+#include "refactoring.h"
 
 void branching_stuff(struct instruction *this)
 {

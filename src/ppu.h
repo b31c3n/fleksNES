@@ -47,7 +47,7 @@ struct ppu_2C0X
         sprite_shifters_hi_[16],
         pixels_[256 * 240];
 
-} extern ppu;
+};
 
 extern struct timeval
     start,

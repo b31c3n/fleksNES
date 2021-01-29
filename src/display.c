@@ -7,9 +7,7 @@
 
 #include "display.h"
 #include "colors.h"
-#include "apu.h"
-#include "ppu.h"
-#include "cpu.h"
+#include "refactoring.h"
 
 struct display display;
 

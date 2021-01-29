@@ -5,12 +5,7 @@
  *      Author: David Jonsson
  */
 
-#include "bus.h"
-#include "ram.h"
-
-uint8_t
-    ram[0x7FF];
-
+#include "refactoring.h"
 
 void ram_write()
 {

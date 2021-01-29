@@ -10,9 +10,6 @@
 
 #include <stdint.h>
 
-extern uint8_t
-    controller_buffer;
-
 void apu_write();
 void apu_read();
 

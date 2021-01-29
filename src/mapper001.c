@@ -8,20 +8,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "mapper000.h"
-#include "mapper.h"
-#include "nametable.h"
-#include "bus.h"
-#include "cpu.h"
+#include "mapper001.h"
 #include "helper_funcs.h"
-
-static uint8_t
-    nametable_mem[2][1024],
-    palette_mem[0x20];
-
-static size_t
-    prg_size,
-    chr_size;
+#include "refactoring.h"
 
 static uint8_t
     shift_reg   = 0x1C,

@@ -9,6 +9,7 @@
 #include "ppu_constants.h"
 #include "ppu.h"
 #include "bus.h"
+#include "refactoring.h"
 
 static void write_ctrl()
 {

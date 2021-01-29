@@ -6,25 +6,8 @@
  */
 
 #include "mapper.h"
-#include "bus.h"
-#include "cpu.h"
 #include "mapper000.h"
-
-/**
- * 16 byte header
- */
-struct ines_header
-	header =
-	        {
-	                .mapper_ctr_mirror_ = 0,
-	        };
-
-
-uint8_t
-    *prg_rom,
-    *prg_ram,
-    *chr_rom;
-
+#include "refactoring.h"
 
 void mapper_init(char *file_name)
 {

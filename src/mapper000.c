@@ -9,19 +9,7 @@
 #include <stdbool.h>
 
 #include "mapper000.h"
-#include "mapper.h"
-#include "nametable.h"
-#include "bus.h"
-#include "cpu.h"
-
-static size_t
-    prg_size,
-    chr_size;
-
-static uint8_t
-    nametable_mem[2][1024],
-    palette_mem[0x20];
-
+#include "refactoring.h"
 
 static void write_prgram()
 {

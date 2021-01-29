@@ -8,6 +8,8 @@
 
 #include "addr_modes.h"
 
+#include "refactoring.h"
+
 /**
  *
  */

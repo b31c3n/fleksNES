@@ -10,11 +10,7 @@
 #include <stdint.h>
 
 #include "tui.h"
-#include "cpu.h"
-#include "bus.h"
-#include "ppu.h"
-#include "nametable.h"
-#include "mapper.h"
+#include "refactoring.h"
 
 void tui_init()
 {

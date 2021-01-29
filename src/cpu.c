@@ -12,9 +12,9 @@
 #include "instruction_tbl.h"
 #include "clock.h"
 #include "ppu.h"
-#include "bus.h"
 #include "config.h"
 #include "ram.h"
+#include "refactoring.h"
 
 bool
     cpu_shutdown   = 0,
@@ -22,35 +22,7 @@ bool
     cpu_save       = 0,
     cpu_load       = 0;
 
-struct c6502 cpu =
-{
-        .status_ = 0x24,
-        .opcode_ = 0xEA,
-        .stack_pointer_ =
-        {
-            .word_ = 0x01FF,
-            .lsb_ = &cpu.stack_pointer_.word_,
-            .msb_ = 0x0
-        },
-        .adh_adl_ =
-        {
-            .word_ = 0x0,
-            .lsb_ = &cpu.adh_adl_.word_,
-            .msb_ = ((uint8_t *) (&cpu.adh_adl_.word_)) + 1
-        },
-        .opcode_args_ =
-        {
-            .word_ = 0x0,
-            .lsb_ = &cpu.opcode_args_.word_,
-            .msb_ = ((uint8_t *) (&cpu.opcode_args_.word_)) + 1
-        },
-        .program_counter_ =
-        {
-            .word_ = 0x0,
-            .lsb_ = &cpu.program_counter_.word_,
-            .msb_ = ((uint8_t *) (&cpu.program_counter_.word_)) + 1
-        },
-};
+
 
 void cpu_fetch_instruction()
 {

@@ -14,31 +14,6 @@
 #include "mapper.h"
 #include "nametable.h"
 
-struct bus
-    cpu_bus =
-    {
-            .interval_ = 0x2000,
-            .write =
-            {
-                    ram_write,
-                    ppu_write,
-                    apu_write,
-            },
-            .read =
-            {
-                    ram_read,
-                    ppu_read,
-                    apu_read,
-            },
-            .ticker = cpu_tick
-    };
-struct bus
-    ppu_bus =
-    {
-            .interval_ = 0x1000,
-            .ticker = ppu_tick
-    };
-
 void bus_read(
         struct bus *bus,
         uint16_t address)

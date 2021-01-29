@@ -10,6 +10,7 @@
 #include "cpu.h"
 #include "helper_funcs.h"
 #include "instruction_tbl.h"
+#include "refactoring.h"
 
 static FILE
     *log_file;

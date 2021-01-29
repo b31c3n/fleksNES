@@ -26,10 +26,6 @@ struct bus
         (*ticker) ();
 };
 
-extern struct bus
-     cpu_bus,
-     ppu_bus;
-
 /**
  * @brief makes cpu tick 1 cycle
  */

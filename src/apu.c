@@ -6,11 +6,9 @@
  */
 
 #include "apu.h"
-#include "cpu.h"
 
-uint8_t
-    controller_buffer,
-    controller_state;
+#include "refactoring.h"
+
 
 void apu_write()
 {
