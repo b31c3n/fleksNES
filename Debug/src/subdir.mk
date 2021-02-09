@@ -20,7 +20,6 @@ C_SRCS += \
 ../src/mapper.c \
 ../src/mapper000.c \
 ../src/mapper001.c \
-../src/nametable.c \
 ../src/ppu.c \
 ../src/ppu_comm.c \
 ../src/ram.c \
@@ -44,7 +43,6 @@ OBJS += \
 ./src/mapper.o \
 ./src/mapper000.o \
 ./src/mapper001.o \
-./src/nametable.o \
 ./src/ppu.o \
 ./src/ppu_comm.o \
 ./src/ram.o \
@@ -68,7 +66,6 @@ C_DEPS += \
 ./src/mapper.d \
 ./src/mapper000.d \
 ./src/mapper001.d \
-./src/nametable.d \
 ./src/ppu.d \
 ./src/ppu_comm.d \
 ./src/ram.d \

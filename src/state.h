@@ -18,6 +18,9 @@ void load_state(void);
 
 struct nes_state
 {
+    /**
+     * Cpu stuff
+     */
     struct c6502
         cpu_;
 
@@ -52,6 +55,16 @@ struct nes_state
         *prg_rom_,
         *prg_ram_,
         *chr_rom_;
+
+    /**
+     * Memory for mapping logic
+     */
+    uint8_t
+        *mlogic_8bit_;
+    uint32_t
+        *mlogic_32bit_;
+    uint16_t
+        *mlogic_16bit_;
 
     struct ines_header
         header_;

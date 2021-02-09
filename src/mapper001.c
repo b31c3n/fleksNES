@@ -11,18 +11,25 @@
 #include "mapper001.h"
 #include "helper_funcs.h"
 #include "refactoring.h"
+#include "state.h"
 
-static uint8_t
-    shift_reg   = 0x1C,
-    shift_bits  = 0,
-    ctrl_reg    = 0,
-    prg_bank    = 0,
-    prg_bank256 = 1,
-    chr_bank0   = 0,
-    chr_bank1   = 1;
-//    prg_mode    = 3,
-//    chr_mode    = 0;
+#define shift_reg       active_state->mlogic_8bit_[0]
+#define shift_bits      active_state->mlogic_8bit_[1]
+#define ctrl_reg        active_state->mlogic_8bit_[2]
+#define prg_bank        active_state->mlogic_8bit_[3]
+#define prg_bank256     active_state->mlogic_8bit_[4]
+#define chr_bank0       active_state->mlogic_8bit_[5]
+#define chr_bank1       active_state->mlogic_8bit_[6]
+#define prg_mode        active_state->mlogic_8bit_[7]
+#define chr_mode        active_state->mlogic_8bit_[8]
+#define reset           active_state->mlogic_8bit_[9]
+//#define write           (bool) active_state->mapping_logic_[10]
 
+#define reg_select      active_state->mlogic_32bit_[0]
+#define prg0_offset     active_state->mlogic_32bit_[1]
+#define prg1_offset     active_state->mlogic_32bit_[2]
+#define chr0_offset     active_state->mlogic_32bit_[3]
+#define chr1_offset     active_state->mlogic_32bit_[4]
 
 #define MAPPER001_CTRL  0
 #define MAPPER001_CHR0  1
@@ -37,16 +44,6 @@ static uint8_t
 #define MAPPER001_CHR_MODE2 2
 #define MAPPER001_CHR_MODE3 3
 
-static uint32_t
-    reg_select  = 0;
-    prg0_offset = 0,
-    prg1_offset = 0x4000,
-    chr0_offset = 0x1000 * 0,
-    chr1_offset = 0x1000 * 1;
-
-static bool
-    reset = 0,
-    write = 1;
 static void shift()
 {
     shift_reg |= (cpu_bus.data_ & 0x1) << shift_bits;
@@ -91,7 +88,7 @@ static void SEROM_cpuwrite_8000()
     if(reset)
     {
         ctrl_reg = shift_reg & 0b11111;
-        uint8_t prg_mode = shift_reg & 0b01100,
+        prg_mode = shift_reg & 0b01100,
         chr_mode = shift_reg & 0b10000;
 
         prg_bank = shift_reg & 0b01111;
@@ -236,7 +233,7 @@ static void SGROM_cpuwrite_8000()
     if(reset)
     {
         ctrl_reg = shift_reg & 0b11111;
-        uint8_t prg_mode = shift_reg & 0b01100,
+        prg_mode = shift_reg & 0b01100,
         chr_mode = shift_reg & 0b10000;
 
         prg_bank = shift_reg & 0b01111;
@@ -455,6 +452,26 @@ void mapper001_save_state(FILE *fp)
 
 void mapper001_init()
 {
+    active_state->mlogic_8bit_ = malloc(10);
+    active_state->mlogic_32bit_ = malloc(5 * sizeof(uint32_t));
+
+    shift_reg   = 0x1C,
+    shift_bits  = 0,
+    ctrl_reg    = 0,
+    prg_bank    = 0,
+    prg_bank256 = 1,
+    chr_bank0   = 0,
+    chr_bank1   = 1;
+    prg_mode    = 3,
+    chr_mode    = 0;
+    reset = 0,
+//    write = 1;
+    reg_select  = 0;
+    prg0_offset = 0,
+    prg1_offset = 0x4000,
+    chr0_offset = 0x1000 * 0,
+    chr1_offset = 0x1000 * 1;
+
     ntable_mem = nametable_mem;
     pal_mem = palette_mem;
     mapper_save_state = mapper001_save_state;

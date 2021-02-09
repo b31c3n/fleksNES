@@ -12,7 +12,6 @@
 #include "ppu.h"
 #include "apu.h"
 #include "mapper.h"
-#include "nametable.h"
 
 void bus_read(
         struct bus *bus,
