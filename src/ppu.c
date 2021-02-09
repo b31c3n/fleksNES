@@ -542,41 +542,6 @@ void ppu_read()
     ppu_comm.read_funcs[ppu_comm.address_]();
 }
 
-/*
-    uint8_t
-        ppu_data_buffer_,
-        x_finescroll_,
-        next_pattern_lo_,
-        next_pattern_hi_,
-        next_tile_id_,
-        next_attr_;
-    bool
-        latch_,
-        zero_hit_possible_,
-        zero_hit_detected_;
-    uint16_t
-        vram_addr_,
-        tram_addr_,
-        scanline_,
-        cycle_,
-        frame_,
-        shift_attr_hi_,
-        shift_attr_lo_,
-        shift_pattern_hi_,
-        shift_pattern_lo_,
-        tile_idx_;
-    uint32_t
-        *oam_sec_p;
-    uint8_t
-        regs_[8],
-        oam_prm_[256],
-        oam_sec_[4 * 8],
-        oam_dummy_[4 * 2],// One extra dummy entry
-        sprite_shifters_lo_[16],
-        sprite_shifters_hi_[16],
-        pixels_[256 * 240];
- */
-
 void ppu_load_state(FILE *fp)
 {
     fread(&ppu, sizeof(ppu), 1, fp);

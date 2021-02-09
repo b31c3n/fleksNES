@@ -16,7 +16,7 @@
 
 #define cpu     internal_state.cpu_
 
-extern struct nes_state
+struct nes_state
     internal_state =
     {
         .cpu_bus_ =
