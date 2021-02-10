@@ -6,6 +6,7 @@
 C_SRCS += \
 ../src/16_bit.c \
 ../src/addr_modes.c \
+../src/api.c \
 ../src/apu.c \
 ../src/bus.c \
 ../src/clock.c \
@@ -29,6 +30,7 @@ C_SRCS += \
 OBJS += \
 ./src/16_bit.o \
 ./src/addr_modes.o \
+./src/api.o \
 ./src/apu.o \
 ./src/bus.o \
 ./src/clock.o \
@@ -52,6 +54,7 @@ OBJS += \
 C_DEPS += \
 ./src/16_bit.d \
 ./src/addr_modes.d \
+./src/api.d \
 ./src/apu.d \
 ./src/bus.d \
 ./src/clock.d \
