@@ -8,6 +8,6 @@
 #ifndef SRC_MAPPER000_H_
 #define SRC_MAPPER000_H_
 
-void mapper000_init();
+void mapper000_init(uint8_t *mapper_mem);
 
 #endif /* SRC_MAPPER000_H_ */

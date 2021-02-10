@@ -8,13 +8,16 @@
 #include <signal.h>
 
 #include "cpu.h"
-#include "tui.h";
-#include "mapper.h"
-#include "display.h"
-#include "instruction_tbl.h"
-#include "clock.h"
-#include "ppu.h"
-#include "config.h"
+#include "state.h"
+//#include "tui.h";
+//#include "mapper.h"
+//#include "display.h"
+//#include "instruction_tbl.h"
+//#include "clock.h"
+//#include "ppu.h"
+//#include "config.h"
+//#include "state.h"
+#include "api.h"
 
 void sigint(int signal)
 {
@@ -32,17 +35,22 @@ void sigsegv(int signal)
 
 int main(int argc, char **argv)
 {
+//    printf("%i\n", sizeof(struct nes_state));
     signal(SIGINT, sigint);
     signal(SIGSEGV, sigsegv);
     #pragma omp parallel sections
     {
         #pragma omp section
         {
-            gettimeofday(&start, NULL);
             log_clear();
-            clock_init();
-            mapper_init(argv[1]);
-
+            uint8_t
+                *ph1 = &internal_state,
+                *ph2,
+                *ph3;
+            fleks_init( argv[1],
+                        ph1,
+                        ph2,
+                        ph3);
             cpu_run();
             mapper_destroy();
         }

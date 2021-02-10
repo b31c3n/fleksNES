@@ -178,30 +178,12 @@ void cpu_set_instruction()
     omp_unset_lock(&writelock);
 }
 
-
 void cpu_load_instruction(int instruction)
 {
     omp_set_lock(&writelock);
     temp_instruction = instruction;
     omp_unset_lock(&writelock);
 }
-
-/**
-    uint8_t
-        accumulator_,
-        x_,
-        y_,
-        status_,
-        opcode_,
-        suspend_etc_,
-        irq_,
-        nmi_;
-    struct _16_bit
-        program_counter_,
-        stack_pointer_,
-        opcode_args_,
-        adh_adl_;
- */
 
 void cpu_load_state(FILE *fp)
 {
@@ -214,6 +196,7 @@ void cpu_load_state(FILE *fp)
     fread(ram, 0x7FF, 1, fp);
 
 }
+
 void cpu_save_state(FILE *fp)
 {
     fwrite(&cpu, 8, 1, fp);

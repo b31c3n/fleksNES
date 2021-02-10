@@ -12,13 +12,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-void mapper_init(char *file_name);
-void mapper_destroy();
-
 #define MIRROR_1SCREEN_LO 0
 #define MIRROR_1SRCEEN_HI 1
 #define MIRROR_VERTICAL   2
 #define MIRROR_HORIZONTAL 3
+
+void mapper_init(char *file_name, uint8_t *mlogic_mem);
+void mapper_destroy();
 
 struct ines_header
 {
@@ -42,4 +42,5 @@ struct ines_header
 extern void
     (*mapper_load_state)(FILE *),
     (*mapper_save_state)(FILE *);
+
 #endif /* SRC_MAPPER_H_ */

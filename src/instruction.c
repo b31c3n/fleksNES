@@ -8,7 +8,7 @@
 #include "16_bit.h"
 #include "refactoring.h"
 
-void branching_stuff(struct instruction *this)
+void branching_stuff(struct instruction *_this)
 {
     uint16_t
         result = (uint16_t) *cpu.program_counter_.lsb_ + *cpu.opcode_args_.lsb_;
@@ -37,10 +37,10 @@ void branching_stuff(struct instruction *this)
  * ADC Add memory to accumulator with carry
  * Operation: A + M + C -> A, C
  */
-void adc(struct instruction *this)
+void adc(struct instruction *_this)
 {
     uint8_t
-        operand = *this->operand_,
+        operand = *_this->operand_,
         acc     = cpu.accumulator_;
     uint16_t
         result  = (uint16_t) cpu.accumulator_ + operand + (cpu.status_ & CPU_STATUS_CARRY);
@@ -60,9 +60,9 @@ void adc(struct instruction *this)
  * AND Memory with Accumulator
  * Operation: A ^ M -> A
  */
-void and(struct instruction *this)
+void and(struct instruction *_this)
 {
-    cpu.accumulator_ &= *this->operand_;
+    cpu.accumulator_ &= *_this->operand_;
 
     uint8_t
         acc         = cpu.accumulator_,
@@ -77,10 +77,10 @@ void and(struct instruction *this)
  * ASL Shift Left One Bit (Memory or Accumulator)
  * Operation: C <- 7 6 5 4 3 2 1 0 <- 0
  */
-void asl(struct instruction *this)
+void asl(struct instruction *_this)
 {
     uint8_t
-        *address = this->operand_;
+        *address = _this->operand_;
     uint16_t
         result = (*address) << 1;
 
@@ -99,11 +99,11 @@ void asl(struct instruction *this)
  * BCC Branch on Carry Clear
  * Operation: Branch on C = 0
  */
-void bcc(struct instruction *this)
+void bcc(struct instruction *_this)
 {
     if(!(cpu.status_ & CPU_STATUS_CARRY))
     {
-        branching_stuff(this);
+        branching_stuff(_this);
     }
 }
 
@@ -111,11 +111,11 @@ void bcc(struct instruction *this)
  * BCS Branch on Carry Set
  * Operation: Branch on C = 1
  */
-void bcs(struct instruction *this)
+void bcs(struct instruction *_this)
 {
     if((cpu.status_ & CPU_STATUS_CARRY))
     {
-        branching_stuff(this);
+        branching_stuff(_this);
     }
 }
 
@@ -123,11 +123,11 @@ void bcs(struct instruction *this)
  * BEQ Branch on Result Zero
  * Operation: Branch on Z = 1
  */
-void beq(struct instruction *this)
+void beq(struct instruction *_this)
 {
     if((cpu.status_ & CPU_STATUS_ZERO))
     {
-        branching_stuff(this);
+        branching_stuff(_this);
     }
 }
 
@@ -138,10 +138,10 @@ void beq(struct instruction *this)
  * Bit 6 and bit 7 are transferred to the status register.
  * If the result of A ^ M is zero then Z = 1, otherwise Z = 0
  */
-void bit(struct instruction *this)
+void bit(struct instruction *_this)
 {
     uint8_t
-        operand     = *this->operand_,
+        operand     = *_this->operand_,
         negative    = operand & 0x80,
         overflow    = operand & 0x60,
         zero        = (1 - (bool) (cpu.accumulator_ & operand)) << 1;
@@ -154,11 +154,11 @@ void bit(struct instruction *this)
  * BMI Branch on result minus
  * Operation: Branch on N = 1
  */
-void bmi(struct instruction *this)
+void bmi(struct instruction *_this)
 {
     if((cpu.status_ & CPU_STATUS_NEGATIVE))
     {
-        branching_stuff(this);
+        branching_stuff(_this);
     }
 }
 
@@ -166,11 +166,11 @@ void bmi(struct instruction *this)
  * BNE Branch on result not zero
  * Operation: Branch on Z = 0
  */
-void bne(struct instruction *this)
+void bne(struct instruction *_this)
 {
     if(!(cpu.status_ & CPU_STATUS_ZERO))
     {
-        branching_stuff(this);
+        branching_stuff(_this);
     }
 }
 
@@ -178,11 +178,11 @@ void bne(struct instruction *this)
  * BPL Branch on result plus
  * Operation: Branch on N = 0
  */
-void bpl(struct instruction *this)
+void bpl(struct instruction *_this)
 {
     if(!(cpu.status_ & CPU_STATUS_NEGATIVE))
     {
-        branching_stuff(this);
+        branching_stuff(_this);
     }
 }
 
@@ -190,7 +190,7 @@ void bpl(struct instruction *this)
  * BRK Force Break
  * Operation: Forced Interrupt PC + 2 v P v
  */
-void brk(struct instruction *this)
+void brk(struct instruction *_this)
 {
     uint16_t
             irq_addr = 0xFFFE,
@@ -240,11 +240,11 @@ void brk(struct instruction *this)
  * BVC Branch on overflow clear
  * Operation: Branch on V = 0
  */
-void bvc(struct instruction *this)
+void bvc(struct instruction *_this)
 {
     if(!(cpu.status_ & CPU_STATUS_OVERFLOW))
     {
-        branching_stuff(this);
+        branching_stuff(_this);
     }
 }
 
@@ -252,11 +252,11 @@ void bvc(struct instruction *this)
  * BVS Branch on overflow set
  * Operation: Branch on V = 1
  */
-void bvs(struct instruction *this)
+void bvs(struct instruction *_this)
 {
     if((cpu.status_ & CPU_STATUS_OVERFLOW))
     {
-        branching_stuff(this);
+        branching_stuff(_this);
     }
 }
 
@@ -264,7 +264,7 @@ void bvs(struct instruction *this)
  * CLC Clear carry flag
  * Operation: 0 -> C
  */
-void clc(struct instruction *this)
+void clc(struct instruction *_this)
 {
     cpu_tick(); // Need 1 cycly for instruction to be interpreted
     cpu.status_ &= ~CPU_STATUS_CARRY;
@@ -274,7 +274,7 @@ void clc(struct instruction *this)
  * CLD Clear decimal mode
  * Operation: 0 -> D
  */
-void cld(struct instruction *this)
+void cld(struct instruction *_this)
 {
     cpu_tick(); // Need 1 cycly for instruction to be interpreted
     cpu.status_ &= ~CPU_STATUS_DECIMAL;
@@ -284,7 +284,7 @@ void cld(struct instruction *this)
  * CLI Clear interrupt disable bit
  * Operation: 0 -> I
  */
-void cli(struct instruction *this)
+void cli(struct instruction *_this)
 {
     cpu_tick(); // Need 1 cycly for instruction to be interpreted
     cpu.status_ &= ~CPU_STATUS_INTERUPT;
@@ -294,7 +294,7 @@ void cli(struct instruction *this)
  * CLV Clear overflow flag
  * Operation: 0 -> V
  */
-void clv(struct instruction *this)
+void clv(struct instruction *_this)
 {
     cpu_tick(); // Need 1 cycly for instruction to be interpreted
     cpu.status_ &= ~CPU_STATUS_OVERFLOW;
@@ -304,13 +304,13 @@ void clv(struct instruction *this)
  * CMP Compare memory and accumulator
  * Operation: A - M
  */
-void cmp(struct instruction *this)
+void cmp(struct instruction *_this)
 {
     uint8_t
-        result      = cpu.accumulator_ - *this->operand_,
+        result      = cpu.accumulator_ - *_this->operand_,
         negative    = result & 0x80,
         zero        = 2 - ((bool) (result & 0xFF) << 1),
-        carry       = (bool) (*this->operand_ <= cpu.accumulator_);
+        carry       = (bool) (*_this->operand_ <= cpu.accumulator_);
 
     cpu.status_ &= 0b01111100;
     cpu.status_ |= negative | zero | carry;
@@ -320,14 +320,14 @@ void cmp(struct instruction *this)
  * CPX Compare Memory and Index X
  * Operation: X - M
  */
-void cpx(struct instruction *this)
+void cpx(struct instruction *_this)
 {
     uint8_t
-        *operand = this->operand_,
+        *operand = _this->operand_,
         result = cpu.x_ - *operand,
         negative    = result & 0x80,
         zero        = 2 - ((bool) (result & 0xFF) << 1),
-        carry       = (bool) (*this->operand_ <= cpu.x_);
+        carry       = (bool) (*_this->operand_ <= cpu.x_);
 
     cpu.status_ &= 0b01111100;
     cpu.status_ |= negative | zero | carry;
@@ -337,14 +337,14 @@ void cpx(struct instruction *this)
  * CPY Compare Memory and Index Y
  * Operation: Y - M
  */
-void cpy(struct instruction *this)
+void cpy(struct instruction *_this)
 {
     uint8_t
-        *operand = this->operand_,
+        *operand = _this->operand_,
         result = cpu.y_ - *operand,
         negative    = result & 0x80,
         zero        = 2 - ((bool) (result & 0xFF) << 1),
-        carry       = (bool) (*this->operand_ <= cpu.y_);
+        carry       = (bool) (*_this->operand_ <= cpu.y_);
 
     cpu.status_ &= 0b01111100;
     cpu.status_ |= negative | zero | carry;
@@ -354,10 +354,10 @@ void cpy(struct instruction *this)
  * DEC Decrement memory by one
  * Operation: M - 1 -> M
  */
-void dec(struct instruction *this)
+void dec(struct instruction *_this)
 {
     uint8_t
-        *operand = this->operand_,
+        *operand = _this->operand_,
         result = --(*operand),
         negative    = result & 0x80,
         zero        = 2 - ((bool) (result & 0xFF) << 1);
@@ -372,7 +372,7 @@ void dec(struct instruction *this)
  * DEX Decrement index X by one
  * Operation: X - 1 -> X
  */
-void dex(struct instruction *this)
+void dex(struct instruction *_this)
 {
     uint8_t
         *operand = &cpu.x_,
@@ -390,7 +390,7 @@ void dex(struct instruction *this)
  * DEY Decrement index Y by one
  * Operation: Y - 1 -> Y
  */
-void dey(struct instruction *this)
+void dey(struct instruction *_this)
 {
     uint8_t
         *operand = &cpu.y_,
@@ -408,10 +408,10 @@ void dey(struct instruction *this)
  * EOR "Exclusive-Or" memory with accumulator
  * Operation: A v M -> A
  */
-void eor(struct instruction *this)
+void eor(struct instruction *_this)
 {
     uint8_t
-        *operand = this->operand_,
+        *operand = _this->operand_,
         result = cpu.accumulator_ ^ (*operand),
         negative    = result & 0x80,
         zero        = 2 - ((bool) (result & 0xFF) << 1);
@@ -426,10 +426,10 @@ void eor(struct instruction *this)
  * INC Increment memory by one
  * Operation: M + -> M
  */
-void inc(struct instruction *this)
+void inc(struct instruction *_this)
 {
     uint8_t
-        *operand = this->operand_,
+        *operand = _this->operand_,
         result = 1 + (*operand),
         negative    = result & 0x80,
         zero        = 2 - ((bool) (result & 0xFF) << 1);
@@ -444,7 +444,7 @@ void inc(struct instruction *this)
  * INX Increment Index X by one
  * Operation: X + -> X
  */
-void inx(struct instruction *this)
+void inx(struct instruction *_this)
 {
     uint8_t
         *operand = &cpu.x_,
@@ -462,7 +462,7 @@ void inx(struct instruction *this)
  * INY Increment Index Y by one
  * Operation: Y + -> Y
  */
-void iny(struct instruction *this)
+void iny(struct instruction *_this)
 {
     uint8_t
         *operand = &cpu.y_,
@@ -481,7 +481,7 @@ void iny(struct instruction *this)
  * Operation: (PC + 1) -> PCL
  *            (PC + 1) -> PCH
  */
-void jmp(struct instruction *this)
+void jmp(struct instruction *_this)
 {
     cpu.program_counter_.word_ = cpu.adh_adl_.word_;
 }
@@ -491,7 +491,7 @@ void jmp(struct instruction *this)
  * Operation: PC + 2 v , (PC + 1) -> PCL
  *            (PC + 1) -> PCH
  */
-void jsr(struct instruction *this)
+void jsr(struct instruction *_this)
 {
 
     uint8_t
@@ -520,10 +520,10 @@ void jsr(struct instruction *this)
  * LDA Load accumulator with memory
  * Operation: M -> A
  */
-void lda(struct instruction *this)
+void lda(struct instruction *_this)
 {
     uint8_t
-        *operand = this->operand_,
+        *operand = _this->operand_,
         result = (*operand),
         negative    = result & 0x80,
         zero        = 2 - ((bool) (result & 0xFF) << 1);
@@ -538,10 +538,10 @@ void lda(struct instruction *this)
  * LDX Load index X with memory
  * Operation: M -> X
  */
-void ldx(struct instruction *this)
+void ldx(struct instruction *_this)
 {
     uint8_t
-        *operand = this->operand_,
+        *operand = _this->operand_,
         result = (*operand),
         negative    = result & 0x80,
         zero        = 2 - ((bool) (result & 0xFF) << 1);
@@ -556,10 +556,10 @@ void ldx(struct instruction *this)
  * LDY Load index Y with memory
  * Operation: M -> Y
  */
-void ldy(struct instruction *this)
+void ldy(struct instruction *_this)
 {
     uint8_t
-        *operand = this->operand_,
+        *operand = _this->operand_,
         result = (*operand),
         negative    = result & 0x80,
         zero        = 2 - ((bool) (result & 0xFF) << 1);
@@ -574,10 +574,10 @@ void ldy(struct instruction *this)
  * LSR Shift right one bit (memory or accumulator)
  * Operation: 0 -> byte ->C
  */
-void lsr(struct instruction *this)
+void lsr(struct instruction *_this)
 {
     uint8_t
-        *address = this->operand_;
+        *address = _this->operand_;
     uint16_t
         result = (*address) >> 1;
 
@@ -595,7 +595,7 @@ void lsr(struct instruction *this)
  * NOP No operation
  * Operation: No Operation (2 cycles)
  */
-void nop(struct instruction *this)
+void nop(struct instruction *_this)
 {
 
 }
@@ -604,10 +604,10 @@ void nop(struct instruction *this)
  * ORA "OR" memory with accumulator
  * Operation: A v M -> A
  */
-void ora(struct instruction *this)
+void ora(struct instruction *_this)
 {
     uint8_t
-        *operand = this->operand_,
+        *operand = _this->operand_,
         result = cpu.accumulator_ | (*operand),
         negative    = result & 0x80,
         zero        = 2 - ((bool) (result & 0xFF) << 1);
@@ -622,7 +622,7 @@ void ora(struct instruction *this)
  * PHA Push accumulator on stack
  * Operation: A v
  */
-void pha(struct instruction *this)
+void pha(struct instruction *_this)
 {
     cpu_bus.data_ = cpu.accumulator_;
     bus_write(&cpu_bus, cpu.stack_pointer_.word_);
@@ -633,7 +633,7 @@ void pha(struct instruction *this)
  * PHP Push processor status on stack
  * Operation: P v
  */
-void php(struct instruction *this)
+void php(struct instruction *_this)
 {
     cpu_bus.data_ = cpu.status_ | 0b110000;
     bus_write(&cpu_bus, cpu.stack_pointer_.word_);
@@ -644,7 +644,7 @@ void php(struct instruction *this)
  * PLA Pull accumulator from stack
  * Operation: A ^
  */
-void pla(struct instruction *this)
+void pla(struct instruction *_this)
 {
     ++*cpu.stack_pointer_.lsb_;
     bus_read(&cpu_bus, cpu.stack_pointer_.word_);
@@ -663,7 +663,7 @@ void pla(struct instruction *this)
  * PLP Pull processor status from stack
  * Operation: P ^
  */
-void plp(struct instruction *this)
+void plp(struct instruction *_this)
 {
     ++*cpu.stack_pointer_.lsb_;
     bus_read(&cpu_bus, cpu.stack_pointer_.word_);
@@ -674,10 +674,10 @@ void plp(struct instruction *this)
  * ROL Rotate one bit left (memory or accumulator)
  * Operation: |-<- byte <- C <-|
  */
-void rol(struct instruction *this)
+void rol(struct instruction *_this)
 {
     uint8_t
-        *address = this->operand_;
+        *address = _this->operand_;
     uint16_t
         result = *address;
 
@@ -699,10 +699,10 @@ void rol(struct instruction *this)
  * ROR Rotate one bit right (memory or accumulator)
  * Operation: |-> C -> byte ->-|
  */
-void ror(struct instruction *this)
+void ror(struct instruction *_this)
 {
     uint8_t
-        *address = this->operand_;
+        *address = _this->operand_;
     uint16_t
         result = *address;
 
@@ -724,7 +724,7 @@ void ror(struct instruction *this)
  * RTI Return from interrupt
  * Operation: P ^ PC^
  */
-void rti(struct instruction *this)
+void rti(struct instruction *_this)
 {
     /**
      * Discarded read
@@ -749,7 +749,7 @@ void rti(struct instruction *this)
  * RTS Return from subroutine
  * Operation: PC^, PC + 1 -> PC
  */
-void rts(struct instruction *this)
+void rts(struct instruction *_this)
 {
     /**
      * Discarded read
@@ -771,10 +771,10 @@ void rts(struct instruction *this)
  * Operation: A - M - -C -> A
  * Note: -C = Borrow
  */
-void sbc(struct instruction *this)
+void sbc(struct instruction *_this)
 {
     uint8_t
-        operand = ~(*this->operand_),
+        operand = ~(*_this->operand_),
         acc = cpu.accumulator_;
     uint16_t
         result = (uint16_t) cpu.accumulator_ + operand + (cpu.status_ & CPU_STATUS_CARRY);
@@ -794,7 +794,7 @@ void sbc(struct instruction *this)
  * SEC Set carry flag
  * Operation: 1 -> C
  */
-void sec(struct instruction *this)
+void sec(struct instruction *_this)
 {
     cpu.status_ |= CPU_STATUS_CARRY;
 }
@@ -803,7 +803,7 @@ void sec(struct instruction *this)
  * SED Set decimal mode
  * Operation: 1 -> D
  */
-void sed(struct instruction *this)
+void sed(struct instruction *_this)
 {
     cpu.status_ |= CPU_STATUS_DECIMAL;
 }
@@ -812,7 +812,7 @@ void sed(struct instruction *this)
  * SEI Set interrupt disable status
  * Operation: 1 -> I
  */
-void sei(struct instruction *this)
+void sei(struct instruction *_this)
 {
     cpu.status_ |= CPU_STATUS_INTERUPT;
 }
@@ -821,34 +821,34 @@ void sei(struct instruction *this)
  * STA Store accumulator in memory
  * Operation: A -> M
  */
-void sta(struct instruction *this)
+void sta(struct instruction *_this)
 {
-    *this->operand_ = cpu.accumulator_;
+    *_this->operand_ = cpu.accumulator_;
 }
 
 /**
  * STX Store index X in memory
  * Operation: X -> M
  */
-void stx(struct instruction *this)
+void stx(struct instruction *_this)
 {
-    *this->operand_ = cpu.x_;
+    *_this->operand_ = cpu.x_;
 }
 
 /**
  * STY Store index Y in memory
  * Operation: Y -> M
  */
-void sty(struct instruction *this)
+void sty(struct instruction *_this)
 {
-    *this->operand_ = cpu.y_;
+    *_this->operand_ = cpu.y_;
 }
 
 /**
  * TAX Transfer accumulator to index X
  * Operation: A -> X
  */
-void tax(struct instruction *this)
+void tax(struct instruction *_this)
 {
     cpu.x_ = cpu.accumulator_;
 }
@@ -857,7 +857,7 @@ void tax(struct instruction *this)
  * TAY Transfer accumulator to index Y
  * Operation: A -> Y
  */
-void tay(struct instruction *this)
+void tay(struct instruction *_this)
 {
     cpu.y_ = cpu.accumulator_;
 
@@ -867,7 +867,7 @@ void tay(struct instruction *this)
  * TYA Transfer index Y to accumulator
  * Operation: Y -> A
  */
-void tya(struct instruction *this)
+void tya(struct instruction *_this)
 {
     cpu.accumulator_ = cpu.y_;
 
@@ -884,7 +884,7 @@ void tya(struct instruction *this)
  * TSX Transfer stack pointer to index X
  * Operation: S -> X
  */
-void tsx(struct instruction *this)
+void tsx(struct instruction *_this)
 {
     cpu.x_ = *cpu.stack_pointer_.lsb_;
 
@@ -901,7 +901,7 @@ void tsx(struct instruction *this)
  * TXA Transfer index X to accumulator
  * Operation: X -> A
  */
-void txa(struct instruction *this)
+void txa(struct instruction *_this)
 {
     cpu.accumulator_ = cpu.x_;
 
@@ -918,12 +918,12 @@ void txa(struct instruction *this)
  * TXS Transfer index X to stack pointer
  * Operation: X -> S
  */
-void txs(struct instruction *this)
+void txs(struct instruction *_this)
 {
     *cpu.stack_pointer_.lsb_ = cpu.x_;
 }
 
-void unofficial_opcode(struct instruction *this)
+void unofficial_opcode(struct instruction *_this)
 {
 
 }

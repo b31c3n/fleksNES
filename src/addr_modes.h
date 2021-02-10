@@ -11,19 +11,19 @@
 #include "instruction.h"
 #include "cpu.h"
 
-void accumulator(struct instruction *this);
-void absolute(struct instruction *this);
-void absolute_x(struct instruction *this);
-void absolute_y(struct instruction *this);
-void absolute_indirect(struct instruction *this);
-void immediate(struct instruction *this);
-void implied(struct instruction *this);
-void indirect(struct instruction *this);
-void indexed_indirect(struct instruction *this);
-void indirect_indexed(struct instruction *this);
-void relative(struct instruction *this);
-void zero_page(struct instruction *this);
-void zero_page_x(struct instruction *this);
-void zero_page_y(struct instruction *this);
+void accumulator(struct instruction *_this);
+void absolute(struct instruction *_this);
+void absolute_x(struct instruction *_this);
+void absolute_y(struct instruction *_this);
+void absolute_indirect(struct instruction *_this);
+void immediate(struct instruction *_this);
+void implied(struct instruction *_this);
+void indirect(struct instruction *_this);
+void indexed_indirect(struct instruction *_this);
+void indirect_indexed(struct instruction *_this);
+void relative(struct instruction *_this);
+void zero_page(struct instruction *_this);
+void zero_page_x(struct instruction *_this);
+void zero_page_y(struct instruction *_this);
 
 #endif /* SRC_ADDR_MODES_H_ */

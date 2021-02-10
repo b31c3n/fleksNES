@@ -9,7 +9,7 @@
 #include "mapper000.h"
 #include "refactoring.h"
 
-void mapper_init(char *file_name)
+void mapper_init(char *file_name, uint8_t *mapper_mem)
 {
     header.file_ = fopen(file_name, "r");
     if(!header.file_) exit(1);
@@ -34,8 +34,8 @@ void mapper_init(char *file_name)
 
     header.mapper_nr_ = ((header.flags_[0] & 0xF0) >> 4) | (header.flags_[1] & 0xF0);
 
-    if(header.mapper_nr_ == 0) mapper000_init();
-    else if(header.mapper_nr_ == 1) mapper001_init();
+    if(header.mapper_nr_ == 0) mapper000_init(mapper_mem);
+    else if(header.mapper_nr_ == 1) mapper001_init(mapper_mem);
     else exit(1);
 
     fclose(header.file_);
@@ -43,8 +43,7 @@ void mapper_init(char *file_name)
 
 void mapper_destroy()
 {
-    free(prg_rom);
-    free(chr_rom);
+
 }
 
 static void temp(FILE *fp) {}

@@ -7,9 +7,9 @@
 
 #include "16_bit.h"
 
-void _16_bit_init(struct _16_bit *this)
+void _16_bit_init(struct _16_bit *_this)
 {
-    this->word_ = 0;
-    this->lsb_ = &this->word_;
-    this->msb_ = ((uint8_t *) (&this->word_)) + 1;
+    _this->word_ = 0;
+    _this->lsb_ = &_this->word_;
+    _this->msb_ = ((uint8_t *) (&_this->word_)) + 1;
 }
