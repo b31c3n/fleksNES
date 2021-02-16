@@ -154,39 +154,6 @@ void cpu_run()
     }
 }
 
-<<<<<<< HEAD
-=======
-omp_lock_t writelock;
-static int temp_instruction;
-
-void cpu_set_instruction()
-{
-    omp_set_lock(&writelock);
-    if(temp_instruction)
-    {
-        uint8_t
-            *byte = &temp_instruction,
-            *address = &cpu.opcode_args_;
-
-        cpu.opcode_ = temp_instruction;
-        ++byte;
-        *address = *byte;
-        ++byte;
-        ++address;
-        *address = *byte;
-    }
-    temp_instruction = 0;
-    omp_unset_lock(&writelock);
-}
-
-void cpu_load_instruction(int instruction)
-{
-    omp_set_lock(&writelock);
-    temp_instruction = instruction;
-    omp_unset_lock(&writelock);
-}
-
->>>>>>> 3efba92c3b3e947a65011cae703266e9293b8943
 void cpu_load_state(FILE *fp)
 {
     fread(&cpu, 8, 1, fp);

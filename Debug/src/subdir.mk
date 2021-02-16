@@ -17,6 +17,7 @@ C_SRCS += \
 ../src/instruction.c \
 ../src/instruction_tbl.c \
 ../src/log.c \
+../src/main.c \
 ../src/mapper.c \
 ../src/mapper000.c \
 ../src/mapper001.c \
@@ -40,6 +41,7 @@ OBJS += \
 ./src/instruction.o \
 ./src/instruction_tbl.o \
 ./src/log.o \
+./src/main.o \
 ./src/mapper.o \
 ./src/mapper000.o \
 ./src/mapper001.o \
@@ -63,6 +65,7 @@ C_DEPS += \
 ./src/instruction.d \
 ./src/instruction_tbl.d \
 ./src/log.d \
+./src/main.d \
 ./src/mapper.d \
 ./src/mapper000.d \
 ./src/mapper001.d \
