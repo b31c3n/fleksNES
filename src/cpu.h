@@ -74,10 +74,4 @@ void cpu_run();
 void cpu_load_state(FILE *fp);
 void cpu_save_state(FILE *fp);
 
-/**
- * Synchronized
- */
-void cpu_set_instruction();
-void cpu_load_instruction(int instruction);
-
 #endif /* SRC_CPU_H_ */

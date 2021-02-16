@@ -17,7 +17,7 @@ struct tui_comp
         *window_;
     void
         (*update)(),
-        (*init)(void *this);
+        (*init)(void *_this);
     int
         x_,
         y_,

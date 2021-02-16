@@ -450,10 +450,13 @@ void mapper001_save_state(FILE *fp)
     fwrite(palette_mem, 0x20, 1, fp);
 }
 
-void mapper001_init()
+void mapper001_init(uint8_t *mapper_mem)
 {
-    active_state->mlogic_8bit_ = malloc(10);
-    active_state->mlogic_32bit_ = malloc(5 * sizeof(uint32_t));
+//    active_state->mlogic_8bit_ = malloc(10);
+//    active_state->mlogic_32bit_ = malloc(5 * sizeof(uint32_t));
+
+    active_state->mlogic_8bit_ = mapper_mem;
+    active_state->mlogic_32bit_ = mapper_mem + 10;
 
     shift_reg   = 0x1C,
     shift_bits  = 0,
@@ -527,13 +530,12 @@ void mapper001_init()
     chr_size = 0x2000 * header.chrrom_size_;
     prg_size = 0x4000 * header.prgrom_size_;
 
-    prg_rom = malloc(prg_size);
-    chr_rom = malloc(chr_size);
-
-    /**
-     * Need to fix program ram according to mapper, 8k for now to get nestest working
-     */
-    prg_ram = malloc(0x1FFF);
+//    prg_rom = malloc(prg_size);
+//    chr_rom = malloc(chr_size);
+//    prg_ram = malloc(0x1FFF);
+    prg_rom = mapper_mem + 10 + 5 * sizeof(uint32_t);
+    chr_rom = prg_rom + prg_size;
+    prg_ram = chr_rom + chr_size;
 
     fread(prg_rom, prg_size, 1, header.file_);
     fread(chr_rom, chr_size, 1, header.file_);

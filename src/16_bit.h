@@ -23,6 +23,6 @@ struct _16_bit
         *lsb_;
 };
 
-void _16_bit_init(struct _16_bit *this);
+void _16_bit_init(struct _16_bit *_this);
 
 #endif /* SRC_16_BIT_H_ */

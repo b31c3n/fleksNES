@@ -75,4 +75,7 @@ extern struct nes_state
     *active_state,
     internal_state;
 
+extern uint8_t
+    mapper_internal_mem[0x20000000];
+
 #endif /* SRC_STATE_H_ */

@@ -81,9 +81,9 @@ void oam_update()
     }
 }
 
-void oam_init(void *this)
+void oam_init(void *_this)
 {
-    tui_oam = this;
+    tui_oam = _this;
 }
 
 /**
@@ -118,9 +118,9 @@ void ntable_update()
     }
 }
 
-void ntable_init(void *this)
+void ntable_init(void *_this)
 {
-    tui_ntable = this;
+    tui_ntable = _this;
 }
 
 /**
@@ -155,9 +155,9 @@ void prgrom_update()
     }
 }
 
-void prgrom_init(void *this)
+void prgrom_init(void *_this)
 {
-    tui_prgrom = this;
+    tui_prgrom = _this;
 }
 
 

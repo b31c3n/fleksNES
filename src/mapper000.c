@@ -101,7 +101,7 @@ static void ntable_write()
     }
 }
 
-void mapper000_init()
+void mapper000_init(uint8_t *mapper_mem)
 {
     ntable_mem = nametable_mem;
     pal_mem = palette_mem;
@@ -130,13 +130,12 @@ void mapper000_init()
     prg_size = 0x4000 * header.prgrom_size_,
     chr_size = 0x2000 * header.chrrom_size_;
 
-    prg_rom = malloc(prg_size);
-    chr_rom = malloc(chr_size);
-
-    /**
-     * Need to fix program ram according to mapper, 8k for now to get nestest working
-     */
-    prg_ram = malloc(0x1FFF);
+//    prg_rom = malloc(prg_size);
+//    chr_rom = malloc(chr_size);
+//    prg_ram = malloc(0x1FFF);
+    prg_rom = mapper_mem;
+    chr_rom = prg_rom + prg_size;
+    prg_ram = chr_rom + chr_size;
 
     fread(prg_rom, prg_size, 1, header.file_);
     fread(chr_rom, chr_size, 1, header.file_);

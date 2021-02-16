@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -lncurses -lGL -lSDL2 -lSDL2_image -lm
+LIBS :=
 

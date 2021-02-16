@@ -6,7 +6,6 @@
  */
 
 #include <stdint.h>
-#include <omp.h>
 
 #include "cpu.h"
 #include "instruction_tbl.h"
@@ -155,54 +154,6 @@ void cpu_run()
     }
 }
 
-omp_lock_t writelock;
-static int temp_instruction;
-
-void cpu_set_instruction()
-{
-    omp_set_lock(&writelock);
-    if(temp_instruction)
-    {
-        uint8_t
-            *byte = &temp_instruction,
-            *address = &cpu.opcode_args_;
-
-        cpu.opcode_ = temp_instruction;
-        ++byte;
-        *address = *byte;
-        ++byte;
-        ++address;
-        *address = *byte;
-    }
-    temp_instruction = 0;
-    omp_unset_lock(&writelock);
-}
-
-
-void cpu_load_instruction(int instruction)
-{
-    omp_set_lock(&writelock);
-    temp_instruction = instruction;
-    omp_unset_lock(&writelock);
-}
-
-/**
-    uint8_t
-        accumulator_,
-        x_,
-        y_,
-        status_,
-        opcode_,
-        suspend_etc_,
-        irq_,
-        nmi_;
-    struct _16_bit
-        program_counter_,
-        stack_pointer_,
-        opcode_args_,
-        adh_adl_;
- */
-
 void cpu_load_state(FILE *fp)
 {
     fread(&cpu, 8, 1, fp);
@@ -214,6 +165,7 @@ void cpu_load_state(FILE *fp)
     fread(ram, 0x7FF, 1, fp);
 
 }
+
 void cpu_save_state(FILE *fp)
 {
     fwrite(&cpu, 8, 1, fp);

@@ -23,19 +23,19 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: nes_emulator
+all: libfleksnes_static.a
 
 # Tool invocations
-nes_emulator: $(OBJS) $(USER_OBJS)
+libfleksnes_static.a: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
-	@echo 'Invoking: GCC C Linker'
-	gcc -fopenmp -o "nes_emulator" $(OBJS) $(USER_OBJS) $(LIBS)
+	@echo 'Invoking: GCC Archiver'
+	ar -r  "libfleksnes_static.a" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) nes_emulator
+	-$(RM) $(ARCHIVES)$(OBJS)$(C_DEPS) libfleksnes_static.a
 	-@echo ' '
 
 .PHONY: all clean dependents
