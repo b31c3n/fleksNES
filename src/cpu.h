@@ -70,7 +70,7 @@ struct c6502
 void cpu_fetch_instruction();
 void cpu_execute_instruction();
 void cpu_tick();
-void cpu_run();
+void cpu_execute_nextinstr();
 void cpu_load_state(FILE *fp);
 void cpu_save_state(FILE *fp);
 

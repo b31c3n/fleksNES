@@ -8,10 +8,8 @@
 #include <sys/time.h>
 
 #include "ppu.h"
-#include "clock.h"
 #include "helper_funcs.h"
 #include "ppu_comm.h"
-#include "config.h"
 #include "refactoring.h"
 
 void ppu_tick(void)

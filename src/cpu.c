@@ -9,19 +9,9 @@
 
 #include "cpu.h"
 #include "instruction_tbl.h"
-#include "clock.h"
 #include "ppu.h"
-#include "config.h"
 #include "ram.h"
 #include "refactoring.h"
-
-bool
-    cpu_shutdown   = 0,
-    cpu_pause      = 0,
-    cpu_save       = 0,
-    cpu_load       = 0;
-
-
 
 void cpu_fetch_instruction()
 {
@@ -70,12 +60,10 @@ void cpu_execute_instruction()
 void cpu_tick()
 {
     ppu_run(), ppu_run(), ppu_run();
-    //clock_nanosleep(&nanosecs, NULL);
 }
 
-void cpu_run()
+void cpu_execute_nextinstr()
 {
-    while(!cpu_shutdown)
     {
         cpu.status_ |= CPU_STATUS_NOT_USED;
 

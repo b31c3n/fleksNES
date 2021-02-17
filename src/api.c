@@ -12,14 +12,16 @@
 
 void fleks_init
 (
-    char    *game,
-    char *mem,
-    char *pixels,
-    char *ram_mem
+    char *game,
+    char *nes_mem,
+    char *mapper_mem,
+    char **pixels,
+    char **ram_mem,
+    char **ctrl_buffer
 )
 {
     struct nes_state
-        *state = mem,
+        *state = nes_mem,
 
         temp_state =
         {
@@ -49,30 +51,30 @@ void fleks_init
             {
                     .status_ = 0x24,
                     .opcode_ = 0xEA,
-                    .stack_pointer_ =
-                    {
-                        .word_ = 0x01FF,
-                        .lsb_ = &cpu.stack_pointer_.word_,
-                        .msb_ = 0x0
-                    },
-                    .adh_adl_ =
-                    {
-                        .word_ = 0x0,
-                        .lsb_ = &cpu.adh_adl_.word_,
-                        .msb_ = ((uint8_t *) (&cpu.adh_adl_.word_)) + 1
-                    },
-                    .opcode_args_ =
-                    {
-                        .word_ = 0x0,
-                        .lsb_ = &cpu.opcode_args_.word_,
-                        .msb_ = ((uint8_t *) (&cpu.opcode_args_.word_)) + 1
-                    },
-                    .program_counter_ =
-                    {
-                        .word_ = 0x0,
-                        .lsb_ = &cpu.program_counter_.word_,
-                        .msb_ = ((uint8_t *) (&cpu.program_counter_.word_)) + 1
-                    },
+//                    .stack_pointer_ =
+//                    {
+//                        .word_ = 0x01FF,
+//                        .lsb_ = &cpu.stack_pointer_.word_,
+//                        .msb_ = 0x0
+//                    },
+//                    .adh_adl_ =
+//                    {
+//                        .word_ = 0x0,
+//                        .lsb_ = &cpu.adh_adl_.word_,
+//                        .msb_ = ((uint8_t *) (&cpu.adh_adl_.word_)) + 1
+//                    },
+//                    .opcode_args_ =
+//                    {
+//                        .word_ = 0x0,
+//                        .lsb_ = &cpu.opcode_args_.word_,
+//                        .msb_ = ((uint8_t *) (&cpu.opcode_args_.word_)) + 1
+//                    },
+//                    .program_counter_ =
+//                    {
+//                        .word_ = 0x0,
+//                        .lsb_ = &cpu.program_counter_.word_,
+//                        .msb_ = ((uint8_t *) (&cpu.program_counter_.word_)) + 1
+//                    },
             },
             .ppu_ =
             {
@@ -87,15 +89,35 @@ void fleks_init
     *state = temp_state;
     active_state = state;
 
-    mapper_init(game, mapper_internal_mem);
+    _16_bit_init(&active_state->cpu_.stack_pointer_);
+    _16_bit_init(&active_state->cpu_.adh_adl_);
+    _16_bit_init(&active_state->cpu_.opcode_args_);
+    _16_bit_init(&active_state->cpu_.program_counter_);
+
+    active_state->cpu_.stack_pointer_.word_ = 0x01FF;
+    active_state->cpu_.stack_pointer_.msb_ = 0x0;
+
+    *ctrl_buffer = &active_state->controller_buffer_;
+    *pixels      = &active_state->ppu_.pixels_;
+
+    mapper_init(game, mapper_mem);
 }
 
-void fleks_step(char *mem)
+void fleks_step()
+{
+    cpu_execute_nextinstr();
+}
+
+void fleks_destroy()
 {
 
 }
 
-void fleks_destroy(char *mem)
+void fleks_savestate()
 {
-
+    save_state();
+}
+void fleks_loadstate()
+{
+    load_state();
 }

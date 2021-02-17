@@ -23,19 +23,19 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: libfleksnes_static.a
+all: libapi.a
 
 # Tool invocations
-libfleksnes_static.a: $(OBJS) $(USER_OBJS)
+libapi.a: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC Archiver'
-	ar -r  "libfleksnes_static.a" $(OBJS) $(USER_OBJS) $(LIBS)
+	ar -r  "libapi.a" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(ARCHIVES)$(OBJS)$(C_DEPS) libfleksnes_static.a
+	-$(RM) $(ARCHIVES)$(OBJS)$(C_DEPS) libapi.a
 	-@echo ' '
 
 .PHONY: all clean dependents
