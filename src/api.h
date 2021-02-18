@@ -14,12 +14,13 @@ extern "C"{
 
     void fleks_init
     (
-        char *game,
-        char *nes_mem,
-        char *mapper_mem,
-        char **pixels,
-        char **ram_mem,
-        char **ctrl_buffer
+        char            *game,
+        char            *nes_mem,
+        char            *mapper_mem,
+        char            **pixels,
+        char            **ram_mem,
+        char            **ctrl_buffer,
+        unsigned short  **scanline
     );
     void fleks_step();
     void fleks_destroy();
